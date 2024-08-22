@@ -1,0 +1,578 @@
+[
+  {
+    "title": "CAKE",
+    "date": "THU, AUG 08",
+    "time": " Show: 7pm | Doors: 5:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "MARC MARON: ALL IN – POSTPONED TO 2/20/25",
+    "date": "THU, AUG 08",
+    "time": " Show: 8pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "SIAMESE DREAM – THE SMASHING PUMPKINS TRIBUTE BAND",
+    "date": "FRI, AUG 09",
+    "time": " Show: 8pm | Doors: 6pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "JASON ISBELL AND THE 400 UNIT",
+    "date": "TUE, AUG 13",
+    "time": " Show: 7pm | Doors: 5:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "STILL WOOZY – LOVESEAT TOUR",
+    "date": "WED, AUG 14",
+    "time": " Show: 7pm | Doors: 5:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "SLICE OF LIFE COMEDY OPEN MIC",
+    "date": "THU, AUG 15",
+    "time": " Show: 7pm | Doors: 6:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "THE BREAKFAST CLUB",
+    "date": "FRI, AUG 16",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "HOT IN HERRE: 2000S DANCE PARTY",
+    "date": "SAT, AUG 17",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "SANTIAGO Y LOS GATOS + PACIFICO + ANDREW THELSTON BAND",
+    "date": "SUN, AUG 18",
+    "time": " Show: 7pm | Doors: 6pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "SARAH SQUIRM: LIVE + IN THE FLESH",
+    "date": "WED, AUG 21",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "THE HIT DOGS W/ LOST TORPEDO",
+    "date": "THU, AUG 22",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "THE EMO NIGHT TOUR",
+    "date": "FRI, AUG 23",
+    "time": " Show: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "HELADO NEGRO",
+    "date": "SAT, AUG 24",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "THE LINDA LINDAS",
+    "date": "TUE, AUG 27",
+    "time": " Show: 7pm | Doors: 6pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "THE JESUS CASINO W/ PAPRIKA",
+    "date": "THU, AUG 29",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "SUBLIME WITH ROME FAREWELL TOUR",
+    "date": "FRI, AUG 30",
+    "time": " Show: 6pm | Doors: 4:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "WEDNESDAY",
+    "date": "FRI, AUG 30",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "JUVENILE W/ THE 400 DEGREEZ BAND",
+    "date": "SAT, AUG 31",
+    "time": " Show: 7pm | Doors: 5:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "WEDNESDAY",
+    "date": "SAT, AUG 31",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "GOGOL BORDELLO",
+    "date": "SUN, SEPT 01",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "SOUL ASYLUM",
+    "date": "TUE, SEPT 03",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "JOSH MELOY",
+    "date": "FRI, SEPT 06",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "GOTH BABE",
+    "date": "SAT, SEPT 07",
+    "time": " Show: 7pm | Doors: 5:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "BRANDY CLARK",
+    "date": "SAT, SEPT 07",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "SHAWN JAMES",
+    "date": "SUN, SEPT 08",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "BUCKETHEAD",
+    "date": "MON, SEPT 09",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "BADFLOWER",
+    "date": "WED, SEPT 11",
+    "time": " Show: 7pm | Doors: 6pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "AMIGO THE DEVIL: YOURS UNTIL THE TOUR IS OVER",
+    "date": "FRI, SEPT 13",
+    "time": " Show: 7:45pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "IDLES",
+    "date": "SAT, SEPT 14",
+    "time": " Show: 7pm | Doors: 5:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "SHREK RAVE",
+    "date": "SAT, SEPT 14",
+    "time": " Show: 9pm | Doors: 8:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "AIA NC PRESENTS: ERIN BROKOVICH",
+    "date": "SUN, SEPT 15",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "THE 502S – GREAT AMERICAN ROAD TRIP",
+    "date": "MON, SEPT 16",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "NOTHING MORE",
+    "date": "TUE, SEPT 17",
+    "time": " Show: 5:50pm | Doors: 5pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "BLACK PUMAS",
+    "date": "TUE, SEPT 17",
+    "time": " Show: 7pm | Doors: 5:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "ROCKY HORROR MUSIC SHOW LIVE!",
+    "date": "FRI, SEPT 20",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "CMT ON TOUR PRESENTS: MICKEY GUYTON",
+    "date": "SAT, SEPT 21",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "FAUN",
+    "date": "SUN, SEPT 22",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "KALEO – PAYBACK TOUR 2024",
+    "date": "TUE, SEPT 24",
+    "time": " Show: 7pm | Doors: 5:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "PINKY PATEL: #ISAIDWHATISAID TOUR",
+    "date": "FRI, SEPT 27",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "CHROMEO & THE MIDNIGHT",
+    "date": "SAT, SEPT 28",
+    "time": " Show: 7pm | Doors: 5:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "GIMME GIMME DISCO",
+    "date": "SAT, SEPT 28",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "THE HIVES",
+    "date": "TUE, OCT 01",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "BROOKS NIELSEN (OF THE GROWLERS)",
+    "date": "WED, OCT 02",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "MOTHER MOTHER",
+    "date": "THU, OCT 03",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "REMI WOLF",
+    "date": "FRI, OCT 04",
+    "time": " Show: 7pm | Doors: 5:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "VALLEY",
+    "date": "FRI, OCT 04",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "THE ELOVATERS",
+    "date": "SAT, OCT 05",
+    "time": " Show: 7pm | Doors: 6pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "VIOLENT FEMMES",
+    "date": "SAT, OCT 05",
+    "time": " Show: 7pm | Doors: 5:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "DAVID NIHILL",
+    "date": "SUN, OCT 06",
+    "time": " Show: 7pm | Doors: 6pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "LAKE STREET DIVE: GOOD TOGETHER TOUR",
+    "date": "TUE, OCT 08",
+    "time": " Show: 7pm | Doors: 5:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "SOUTHALL",
+    "date": "WED, OCT 09",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "TVBOO",
+    "date": "THU, OCT 10",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "NECK DEEP",
+    "date": "FRI, OCT 11",
+    "time": " Show: 7:30pm | Doors: 6:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "THEE SACRED SOULS: LIVE FOR YOU TOUR",
+    "date": "SAT, OCT 12",
+    "time": " Show: 7pm | Doors: 5:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "HALLOWOLFBAT 2024",
+    "date": "SAT, OCT 12",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "VAMPIRE WEEKEND – ‘ONLY GOD WAS ABOVE US’ TOUR",
+    "date": "SUN, OCT 13",
+    "time": " Show: 6pm | Doors: 5pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "FIDLAR",
+    "date": "TUE, OCT 15",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "DJ SHADOW",
+    "date": "WED, OCT 16",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "JOHN VINCENT III",
+    "date": "THU, OCT 17",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "DAVID CROSS – THE END OF THE BEGINNING OF THE END",
+    "date": "FRI, OCT 18",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "JOSÉ GONZÁLEZ",
+    "date": "SAT, OCT 19",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "RAILROAD EARTH",
+    "date": "SUN, OCT 20",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "GINGER ROOT",
+    "date": "MON, OCT 21",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "CORTEX",
+    "date": "WED, OCT 23",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "NORA EN PURE",
+    "date": "THU, OCT 24",
+    "time": " Show: 9pm | Doors: 8pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "DIRTWIRE",
+    "date": "FRI, OCT 25",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "HEAVY MOUNTAIN MUSIC & BEER FEST",
+    "date": "SAT, OCT 26",
+    "time": " Show: 2pm | Doors: 1:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "LP GIOBBI PRESENTS: WAY BACK HOME TOUR",
+    "date": "SUN, OCT 27",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "OSEES",
+    "date": "MON, OCT 28",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "DYLAN GOSSETT",
+    "date": "TUE, OCT 29",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "COLD WAR KIDS – 20 YEARS TOUR",
+    "date": "WED, OCT 30",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "MJ LENDERMAN & THE WIND",
+    "date": "FRI, NOV 01",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "PIGEONS PLAYING PING PONG",
+    "date": "SAT, NOV 02",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "BETTER LOVERS",
+    "date": "SUN, NOV 03",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "DRIVE-BY TRUCKERS",
+    "date": "THU, NOV 07",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "DRIVE-BY TRUCKERS",
+    "date": "FRI, NOV 08",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "MORGAN WADE",
+    "date": "SUN, NOV 10",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "GWAR",
+    "date": "MON, NOV 11",
+    "time": " Show: 7:30pm | Doors: 6:30pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "CRAIG FERGUSON: PANTS ON FIRE",
+    "date": "TUE, NOV 12",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "YOKE LORE",
+    "date": "THU, NOV 14",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "MOON TAXI",
+    "date": "SAT, NOV 16",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "PANCHIKO",
+    "date": "SUN, NOV 17",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "MIPSO",
+    "date": "WED, NOV 20",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "BLOOD INCANTATION",
+    "date": "THU, NOV 21",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "ANIMALS AS LEADERS: JOY OF MOTION X TOUR",
+    "date": "FRI, NOV 22",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "SHANE SMITH & THE SAINTS",
+    "date": "SUN, NOV 24",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "OCIE ELLIOTT",
+    "date": "WED, NOV 27",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "RUMOURS ATL: A FLEETWOOD MAC TRIBUTE",
+    "date": "SAT, NOV 30",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "THE WOOD BROTHERS",
+    "date": "FRI, DEC 06",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "THE WOOD BROTHERS",
+    "date": "SAT, DEC 07",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "UNDEROATH",
+    "date": "MON, DEC 09",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "TOMMY EMMANUEL, CGP",
+    "date": "THU, DEC 12",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "FUTUREBIRDS",
+    "date": "THU, DEC 19",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "LIFE BE LIFIN’ STARRING MONÉT X CHANGE",
+    "date": "WED, JAN 22",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "MARC MARON: ALL IN",
+    "date": "THU, FEB 20",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  },
+  {
+    "title": "BRIGHT EYES",
+    "date": "THU, MAR 13",
+    "time": " Show: 8pm | Doors: 7pm",
+    "location": "The Orange Peel"
+  }
+]

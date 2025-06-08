@@ -41,6 +41,7 @@ const MainNavbar = () => {
             {isAuthenticated ? (
               <NavDropdown title={<><i className="bi bi-person-circle me-2"></i>User</>} id="user-dropdown">
                 <NavDropdown.Item as={Link} href="/profile">Profile</NavDropdown.Item>
+                <NavDropdown.Item as={Link} href="/account">Account</NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item >Logout</NavDropdown.Item>
               </NavDropdown>

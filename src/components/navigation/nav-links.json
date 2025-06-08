@@ -3,7 +3,14 @@
     "id": "home",
     "label": "Home",
     "href": "/",
-    "icon": "bi-house-door"
+    "icon": "bi-house"
+  },
+  {
+    "id": "dashboard",
+    "label": "Dashboard",
+    "href": "/dashboard",
+    "icon": "bi-speedometer2",
+    "auth": true
   },
   {
     "id": "feed",
@@ -13,23 +20,15 @@
     "auth": true
   },
   {
-    "id": "dashboard",
-    "label": "Dashboard",
-    "href": "/dashboard",
-    "icon": "bi-grid",
-    "auth": true
+    "id": "venues",
+    "label": "Venues",
+    "href": "/venues",
+    "icon": "bi-building"
   },
   {
-    "id": "discover",
-    "label": "Discover",
-    "href": "/discover",
-    "icon": "bi-compass"
-  },
-  {
-    "id": "profile",
-    "label": "Profile",
-    "href": "/profile",
-    "icon": "bi-person-circle",
-    "auth": true
+    "id": "artists",
+    "label": "Artists",
+    "href": "/artists",
+    "icon": "bi-mic"
   }
 ] 

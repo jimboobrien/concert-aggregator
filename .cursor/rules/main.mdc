@@ -16,3 +16,6 @@ Globs: *
 - Use Stripe for billing
 - Do not prompt me to run 'npm run dev' it is already running in the terminal
 - Do not use anything other than bootstrap-icons for all icons within the app
+- Keep track of all tasks in the tasks.json file for the AI to execute.
+- Never do more than one phase at a time when implementing features as we will do testing after
+- Keep track of the status of the tasks either pending, in-progress, or complete for each task in task.json

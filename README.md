@@ -120,7 +120,7 @@ The `index.html` file:
 ## Dependencies
 
 - **Puppeteer** (^22.15.0): Web scraping and browser automation
-- **Bootstrap 4**: Frontend CSS framework (loaded via CDN)
+- **Bootstrap 5**: Frontend CSS framework
 - **jQuery**: JavaScript library for DOM manipulation (loaded via CDN)
 
 ## Technical Details

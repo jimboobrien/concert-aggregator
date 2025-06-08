@@ -1,85 +1,72 @@
 # Concert Aggregator Documentation
 
-Welcome to the Concert Aggregator documentation! This folder contains comprehensive documentation for both current functionality and future development plans.
+Welcome to the Concert Aggregator documentation! This folder contains practical implementation guides and specifications for building a modern concert aggregation system.
 
 ## Documentation Structure
 
+### 🚀 [phase1-implementation.md](phase1-implementation.md)
+**Phase 1: Core Scraping API Implementation** ⭐ **START HERE**
+- Enhanced Puppeteer scraping with API endpoints
+- Data persistence (JSON files + optional Supabase)
+- Venue configuration system and error handling
+- Complete code examples and testing guides
+
 ### 📋 [ROADMAP.md](ROADMAP.md)
 **Project Development Roadmap**
-- Long-term vision and goals
-- Planned releases and timelines (v2.0 - v3.5)
-- Feature priorities and milestones
-- Technical roadmap and modernization plans
-- Success metrics and KPIs
+- Simplified development phases
+- Version releases (v2.0 - v3.5)
+- Feature priorities and technical roadmap
+
+### 🏗️ [technical-architecture.md](technical-architecture.md)
+**Technical Architecture Overview**
+- Next.js 14+ App Router system design
+- Supabase integration and authentication
+- Template-ready CRUD architecture
+
+### 🕷️ [scraping-modernization.md](scraping-modernization.md)
+**Phase 2: Firecrawl AI Integration**
+- AI-powered web scraping with Firecrawl.dev
+- Hybrid fallback system (Firecrawl → Puppeteer)
+- Custom venue endpoints and advanced processing
+
+### 🎯 [supabase-crud-template.md](supabase-crud-template.md)
+**Reusable CRUD Template Patterns**
+- Adaptable architecture for different domains
+- Multi-dashboard system design
+- Template customization strategies
 
 ### 📊 [dashboard-spec.md](dashboard-spec.md)
 **Dashboard Interface Specification**
-- Analytics overview and venue status cards
-- User interface design and layout mockups
-- Interactive components and real-time updates
-- Responsive design considerations
-- Performance and accessibility features
+- Analytics overview and status cards
+- Interactive components and responsive design
 
 ### 🔍 [filtering-system.md](filtering-system.md)
 **Advanced Filtering System**
 - Multi-criteria filtering capabilities
-- Search functionality with fuzzy matching
-- Filter UI design and user experience
-- API design for filter requests
-- Performance optimization strategies
+- Search functionality and API design
 
 ### 🔄 [enhanced-sorting.md](enhanced-sorting.md)
-**Enhanced Sorting System**
-- Advanced sorting algorithms and options
-- Personalization and machine learning integration
-- Smart sorting modes (Weekend Warrior, Budget Conscious, etc.)
-- Performance optimization and caching
-- Mobile-specific considerations
-
-### 🏗️ [technical-architecture.md](technical-architecture.md)
-**Technical Architecture - Supabase Integration**
-- Next.js 14+ App Router with Supabase Backend-as-a-Service
-- Real-time database with Row Level Security (RLS)
-- Multi-role authentication and authorization
-- Template-ready architecture for CRUD applications
-- Deployment and monitoring with Vercel + Supabase
-
-### 🕷️ [scraping-modernization.md](scraping-modernization.md)
-**Scraping System with Real-time Data Flow**
-- Transition from JSON files to Supabase real-time database
-- Firecrawl.dev integration for AI-powered web scraping
-- Live UI updates with Supabase real-time subscriptions
-- CRUD dashboards for data management and analytics
-- Template patterns for other data collection applications
-
-### 🎯 [supabase-crud-template.md](supabase-crud-template.md)
-**Reusable CRUD Application Template**
-- Complete template architecture using Next.js + Supabase
-- Adaptable patterns for e-commerce, real estate, job boards
-- Multi-dashboard system (Admin, User, Public)
-- Real-time collaboration and data synchronization
-- Customization guide and deployment strategies
+**Enhanced Sorting Features**
+- Advanced sorting algorithms
+- Personalization and smart sorting modes
 
 ## Quick Navigation
 
-### 🎯 **For Product Planning**
-Start with [ROADMAP.md](ROADMAP.md) to understand the overall vision and planned features.
+### 🚀 **Getting Started**
+**Start with [phase1-implementation.md](phase1-implementation.md)** - Complete guide for implementing the core scraping API with code examples and testing instructions.
 
-### 🎨 **For UI/UX Design**
-Review [dashboard-spec.md](dashboard-spec.md) and [filtering-system.md](filtering-system.md) for interface specifications.
+### 📋 **Planning & Architecture**
+Review [ROADMAP.md](ROADMAP.md) for development phases and [technical-architecture.md](technical-architecture.md) for system design overview.
 
-### 💻 **For Technical Implementation**
-Begin with [technical-architecture.md](technical-architecture.md) for the Supabase + Next.js system design, then review [scraping-modernization.md](scraping-modernization.md) for real-time data collection, and dive into specific feature docs.
+### 🔧 **Implementation Phases**
+1. **Phase 1**: [phase1-implementation.md](phase1-implementation.md) - Core scraping API
+2. **Phase 2**: [scraping-modernization.md](scraping-modernization.md) - Firecrawl AI integration
 
-### 🎯 **For Template Development**
-Start with [supabase-crud-template.md](supabase-crud-template.md) to understand the reusable architecture patterns, then adapt the concert aggregator for your specific domain needs.
+### 🎯 **Template Development**
+Use [supabase-crud-template.md](supabase-crud-template.md) to adapt this architecture for other domains (e-commerce, real estate, job boards, etc.).
 
-### 🔧 **For Feature Development**
-Each feature document ([dashboard-spec.md](dashboard-spec.md), [filtering-system.md](filtering-system.md), [enhanced-sorting.md](enhanced-sorting.md)) contains:
-- Detailed specifications
-- Implementation phases
-- Testing strategies
-- Performance considerations
+### 📊 **Feature Specifications**
+Advanced features: [dashboard-spec.md](dashboard-spec.md), [filtering-system.md](filtering-system.md), [enhanced-sorting.md](enhanced-sorting.md)
 
 ## Current Project Status
 
@@ -95,12 +82,10 @@ Each feature document ([dashboard-spec.md](dashboard-spec.md), [filtering-system
 - Technical architecture planning
 
 🚀 **Next Steps:**
-- **Supabase migration** from JSON files to real-time database
-- **Authentication system** with multi-role support
-- **CRUD dashboards** for admin, user, and public interfaces
-- **Real-time features** with live data synchronization
+- **Phase 1**: Core scraping API with enhanced Puppeteer and data persistence  
+- **Phase 2**: Firecrawl.dev AI integration and hybrid fallback system
+- **Phase 3**: Supabase migration with real-time features and user authentication
 - **Template documentation** for reusable CRUD patterns
-- Advanced filtering and enhanced sorting capabilities
 
 ## Contributing to Documentation
 

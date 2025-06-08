@@ -28,7 +28,8 @@ The future Concert Aggregator will evolve from a simple static site to a full-st
 - **Next.js 14+ with App Router** and TypeScript
 - **React 18+ with Server Components** for optimal performance
 - **Supabase** for authentication, database, and real-time features
-- **shadcn/ui + Tailwind CSS** for modern UI components
+- **Bootstrap 5** for responsive UI components and styling
+- **React Bootstrap** for seamless React integration
 - **Built-in Next.js API Routes** for backend endpoints
 - **Supabase PostgreSQL** with Row Level Security (RLS)
 - **Supabase Real-time** for live data synchronization

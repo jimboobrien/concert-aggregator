@@ -6,35 +6,32 @@ Transform the Concert Aggregator from a simple event listing tool into a compreh
 
 ## Planned Releases
 
-### Version 2.0 - Supabase Migration & Enhanced UX (Q2 2024)
-- **Supabase Integration**: Replace JSON files with real-time database
-- **Authentication System**: Multi-provider auth with user roles
-- **CRUD Dashboards**: Admin, user, and public dashboard interfaces
-- **Real-time Features**: Live event updates and notifications
-- **Advanced Filtering**: Multi-criteria filtering system
-- **Enhanced Sorting**: Multiple sort options and custom preferences
-- **Template Foundation**: Reusable architecture for other CRUD apps
+### Version 2.0 - Core API & Data Persistence (Q2 2024)
+- **Phase 1**: Enhanced Puppeteer scraping with Next.js API endpoints
+- **Data Storage**: Dual persistence (JSON files + optional Supabase)
+- **Venue Management**: Configurable scraping with flexible selectors
+- **Error Handling**: Robust logging and status tracking
+- **Template Foundation**: Basic CRUD architecture for reusability
 
-### Version 2.5 - Personalization (Q3 2024)
-- **User Preferences**: Save favorite venues and artists
-- **Notification System**: Alerts for new events from favorite artists
-- **Event Calendar Integration**: Export to Google Calendar, iCal
-- **Wishlist Feature**: Save events of interest
-- **Search Functionality**: Full-text search across all events
+### Version 2.5 - AI-Powered Scraping (Q3 2024)
+- **Phase 2**: Firecrawl.dev integration for AI-powered extraction
+- **Hybrid System**: Automatic fallback from Firecrawl to Puppeteer
+- **Custom Endpoints**: Flexible venue scraping with configurable rules
+- **Advanced Validation**: Enhanced data processing and quality metrics
 
-### Version 3.0 - Community Features (Q4 2024)
-- **User Reviews**: Rate and review attended events
-- **Social Sharing**: Share events on social media
-- **Attendance Tracking**: Mark events as "going" or "interested"
-- **Event Recommendations**: AI-powered suggestions based on history
-- **Venue Analytics**: Detailed venue statistics and trends
+### Version 3.0 - Supabase Migration & User Features (Q4 2024)
+- **Supabase Integration**: Real-time database with authentication
+- **User Dashboard**: Save favorite venues and events
+- **CRUD Interface**: Admin dashboard for data management
+- **Real-time Updates**: Live event synchronization
+- **Search & Filtering**: Advanced filtering and sorting capabilities
 
-### Version 3.5 - Advanced Analytics (Q1 2025)
-- **Price Tracking**: Monitor ticket price changes over time
-- **Market Analysis**: Concert market trends and insights
-- **Venue Comparison**: Compare venues by popularity, pricing, etc.
-- **Historical Data**: Archive and analyze past event data
+### Version 3.5 - Community & Analytics (Q1 2025)
+- **User Interactions**: Reviews, ratings, and social features
+- **Event Recommendations**: AI-powered suggestions
+- **Analytics Dashboard**: Venue trends and market insights
 - **API Development**: Public API for third-party integrations
+- **Template Gallery**: Community-driven CRUD templates
 
 ## Current Status
 
@@ -49,10 +46,10 @@ Transform the Concert Aggregator from a simple event listing tool into a compreh
 - Code optimization and error handling
 
 📋 **Next Up:**
-- Scraping system modernization (API endpoints + Firecrawl.dev)
-- Dashboard development
-- Advanced filtering system
-- Enhanced sorting capabilities
+- **Phase 1**: Core scraping API with enhanced Puppeteer and data persistence
+- **Phase 2**: Firecrawl.dev AI integration
+- Dashboard development and Supabase migration
+- Advanced filtering and sorting capabilities
 
 ## Technical Roadmap
 

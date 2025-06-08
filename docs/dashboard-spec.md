@@ -62,11 +62,13 @@ Each venue gets a status card showing:
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Color Scheme & Styling
-- **Primary Colors**: Dark theme with concert venue aesthetic
-- **Accent Colors**: Venue-specific colors for cards
-- **Typography**: Modern, readable fonts (Inter/Roboto)
-- **Icons**: Music and venue-themed iconography
+### Bootstrap 5 Styling
+- **Theme**: Custom Bootstrap 5 theme with dark mode support
+- **Color Palette**: Primary (concert theme), secondary (venue colors)
+- **Typography**: Bootstrap 5 typography system with custom fonts
+- **Components**: Bootstrap cards, badges, buttons, and navigation
+- **Icons**: Bootstrap Icons or Font Awesome for consistency
+- **Grid System**: Bootstrap 5 responsive grid for all layouts
 
 ## Interactive Components
 
@@ -157,7 +159,7 @@ Each venue gets a status card showing:
 
 ### Frontend Framework
 - React.js with hooks for state management
-- Material-UI or Chakra UI for components
+- Bootstrap 5 with React Bootstrap for UI components
 - React Router for navigation
 
 ### State Management

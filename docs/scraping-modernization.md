@@ -236,59 +236,46 @@ export default function AdminDashboard() {
 
 ## Implementation Plan
 
-### Phase 1: Next.js API Routes
-Create Next.js App Router API endpoints for scraping control:
+### Phase 1: Core Scraping API with Data Persistence
+**Focus**: Get basic scraping working with proper API endpoints and data storage
 
-**File Structure:**
+**Essential Features:**
+- **Enhanced Puppeteer scraping** with improved error handling
+- **Next.js API Routes** for scraping control
+- **Data persistence** (JSON files + optional Supabase integration)
+- **Basic validation** and error logging
+
+**API Endpoints (Phase 1):**
 ```
-app/
-├── api/
-│   └── scrape/
-│       ├── venue/
-│       │   └── [venueId]/
-│       │       └── route.ts      # POST /api/scrape/venue/[venueId]
-│       ├── custom/
-│       │   └── route.ts          # POST /api/scrape/custom
-│       ├── all/
-│       │   └── route.ts          # POST /api/scrape/all
-│       ├── status/
-│       │   └── route.ts          # GET /api/scrape/status
-│       ├── schedule/
-│       │   └── route.ts          # POST /api/scrape/schedule
-│       └── presets/
-│           ├── route.ts          # GET/POST /api/scrape/presets
-│           └── [name]/
-│               └── route.ts      # GET /api/scrape/presets/[name]
+app/api/scrape/
+├── venue/[venueId]/route.ts    # POST /api/scrape/venue/[venueId]
+├── all/route.ts                # POST /api/scrape/all
+└── status/route.ts             # GET /api/scrape/status
 ```
 
-**Endpoints:**
-- `POST /api/scrape/venue/[venueId]` - Scrape specific venue (preconfigured)
-- `POST /api/scrape/custom` - Scrape any venue with custom extraction rules
-- `POST /api/scrape/all` - Scrape all venues
-- `GET /api/scrape/status` - Get scraping status
-- `POST /api/scrape/schedule` - Schedule automated scraping
-- `POST /api/scrape/presets` - Save extraction configuration presets
-- `GET /api/scrape/presets` - List available presets
-- `GET /api/scrape/presets/[name]` - Get specific preset configuration
+**Core Implementation:**
+1. **Enhanced Puppeteer service** with better selectors and error handling
+2. **Venue configuration system** with flexible selector mapping
+3. **Data validation** and normalization pipeline
+4. **Dual storage**: Save to JSON files AND optionally to Supabase
+5. **Basic logging** and status tracking
 
-### Phase 2: Firecrawl Service
-Implement primary scraping using Firecrawl.dev:
-- AI-powered content extraction
-- Natural language prompts for each venue
-- Structured JSON output
-- Built-in error handling
+### Phase 2: AI-Powered Scraping with Firecrawl
+**Focus**: Add Firecrawl.dev integration as primary scraping method
 
-### Phase 3: Hybrid Fallback System
-Enhanced Puppeteer as backup:
-- Improved error handling
-- Better selector management
-- Automatic fallback when Firecrawl fails
+**Enhanced Features:**
+- **Firecrawl integration** with AI-powered extraction
+- **Hybrid fallback system** (Firecrawl → Puppeteer)
+- **Custom venue endpoint** with configurable extraction rules
+- **Advanced data processing** and quality metrics
 
-### Phase 4: Data Processing Pipeline
-- Event validation service
-- Deduplication logic
-- Data normalization
-- Quality metrics
+**Additional API Endpoints:**
+```
+app/api/scrape/
+├── custom/route.ts             # POST /api/scrape/custom
+├── presets/route.ts            # GET/POST /api/scrape/presets
+└── presets/[name]/route.ts     # GET /api/scrape/presets/[name]
+```
 
 ## Venue-Specific Configuration
 
@@ -950,14 +937,14 @@ concert-aggregator/
 │   │   │       └── route.ts            # GET /api/scrape/status
 │   │   └── venues/
 │   │       └── route.ts                # GET /api/venues
-│   ├── globals.css                     # Global styles
+│   ├── globals.css                     # Global styles and Bootstrap customizations
 │   ├── layout.tsx                      # Root layout
 │   └── page.tsx                        # Home page
 ├── components/                         # Reusable components
-│   ├── ui/                            # UI components
-│   │   ├── button.tsx
-│   │   ├── card.tsx
-│   │   └── input.tsx
+│   ├── ui/                            # Bootstrap 5 UI components
+│   │   ├── Button.tsx
+│   │   ├── Card.tsx
+│   │   └── Form.tsx
 │   ├── events/                        # Event-related components
 │   │   ├── event-card.tsx
 │   │   ├── event-list.tsx
@@ -991,7 +978,7 @@ concert-aggregator/
 ├── .env.local                         # Environment variables
 ├── next.config.js                     # Next.js configuration
 ├── package.json
-├── tailwind.config.js                 # Tailwind CSS config
+├── bootstrap.config.js                # Bootstrap 5 customization (optional)
 └── tsconfig.json                      # TypeScript config
 ```
 

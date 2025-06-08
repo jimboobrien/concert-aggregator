@@ -10,8 +10,8 @@ The Concert Aggregator serves as a comprehensive template for building modern CR
 - **Next.js 14+ with App Router** - Full-stack framework
 - **Supabase** - Backend-as-a-Service (Auth + Database + Real-time)
 - **TypeScript** - Type safety throughout the application
-- **Tailwind CSS** - Utility-first styling
-- **shadcn/ui** - High-quality component library
+- **Bootstrap 5** - Responsive CSS framework for UI components
+- **React Bootstrap** - Bootstrap components for React integration
 
 ### Key Template Features
 - **Real-time data synchronization** across all connected clients
@@ -256,10 +256,11 @@ const dashboardConfig = {
 ## Implementation Benefits
 
 ### Development Speed
-- **Rapid prototyping** with Supabase instant APIs
+- **Rapid prototyping** with Supabase instant APIs and Bootstrap 5 components
 - **Real-time features** without WebSocket management
 - **Authentication** handled out-of-the-box
 - **Type safety** with generated TypeScript types
+- **Responsive design** with Bootstrap 5 grid system and utilities
 
 ### Scalability
 - **PostgreSQL** scales to millions of records
@@ -290,12 +291,49 @@ cd your-template-repo
 # Install dependencies
 npm install
 
+# Bootstrap 5 is included via CDN or npm package
+# No additional configuration required
+
 # Configure Supabase
 cp .env.example .env.local
 # Add your Supabase URL and anon key
 
 # Run locally
 npm run dev
+```
+
+### Bootstrap 5 Integration
+```json
+// package.json dependencies
+{
+  "dependencies": {
+    "bootstrap": "^5.3.0",
+    "react-bootstrap": "^2.8.0",
+    "@popperjs/core": "^2.11.8"
+  }
+}
+```
+
+```tsx
+// app/layout.tsx - Global Bootstrap CSS import
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Container } from 'react-bootstrap';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <Container fluid>
+          {children}
+        </Container>
+      </body>
+    </html>
+  );
+}
 ```
 
 ### Supabase Project Setup

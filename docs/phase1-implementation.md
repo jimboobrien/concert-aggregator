@@ -2,7 +2,7 @@
 
 ## Overview
 
-Phase 1 focuses on building a flexible and powerful scraping API centered around a unified `doCallForFirecrawl` abstraction. This approach allows for multiple data extraction methods—from AI-powered prompts to specific CSS selectors—all handled through a single, consistent interface. We will prioritize building this core service, its API endpoint, and reliable data persistence, setting a scalable foundation for future enhancements.
+Phase 1 focuses on building a flexible and powerful scraping API centered around a unified `crawlConcertVenue` abstraction. This approach allows for multiple data extraction methods—from AI-powered prompts to specific CSS selectors—all handled through a single, consistent interface. We will prioritize building this core service, its API endpoint, and reliable data persistence, setting a scalable foundation for future enhancements.
 
 ## Goals
 
@@ -13,13 +13,13 @@ Phase 1 focuses on building a flexible and powerful scraping API centered around
 - ✅ **Configuration-driven** approach for defining scraping jobs.
 - ✅ **Robust Validation** and error logging.
 
-## Core Concept: The `doCallForFirecrawl` Abstraction
+## Core Concept: The `crawlConcertVenue` Abstraction
 
 The entire scraping system is built around a single, powerful function signature. This design decouples the API endpoint from the underlying scraping technology, allowing us to evolve our methods without breaking the interface.
 
 ```typescript
 // Core function signature
-doCallForFirecrawl(
+crawlConcertVenue(
   url: string,
   config: CrawlConfig
 ): Promise<ScrapedData>;
@@ -99,7 +99,7 @@ import { CrawlConfig, ScrapedEvent } from '@/types/scraping';
 const firecrawlClient = new Firecrawl(process.env.FIRECRAWL_API_KEY!);
 
 export class FirecrawlService {
-  public async doCallForFirecrawl(
+  public async crawlConcertVenue(
     url: string,
     config: CrawlConfig
   ): Promise<ScrapedEvent[]> {
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
     const storage = new DataPersistenceService();
 
     // 1. Perform scraping
-    const events = await scraper.doCallForFirecrawl(url, crawlConfig);
+    const events = await scraper.crawlConcertVenue(url, crawlConfig);
     console.log(`Successfully scraped ${events.length} events from ${url}`);
 
     // 2. Add metadata

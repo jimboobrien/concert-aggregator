@@ -19,3 +19,5 @@ Globs: *
 - Keep track of all tasks in the tasks.json file for the AI to execute.
 - Never do more than one phase at a time when implementing features as we will do testing after
 - Keep track of the status of the tasks either pending, in-progress, or complete for each task in task.json
+- never ask me to run npm run dev always assume im already doing it manually
+- never run npm run dev in ther terminal

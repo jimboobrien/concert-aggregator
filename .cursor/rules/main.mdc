@@ -1,0 +1,18 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+Description: General Guidelines  
+Globs: *
+---
+
+# General Coding Guidelines
+
+- Use TypeScript for all frontend components.  
+- Always provide concise comments explaining complex logic.  
+- Prioritize readability and maintainability.
+- Use Stripe for billing
+- Do not prompt me to run 'npm run dev' it is already running in the terminal
+- Do not use anything other than bootstrap-icons for all icons within the app

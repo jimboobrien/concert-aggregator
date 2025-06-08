@@ -1,0 +1,21 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+Description: Frontend Coding Standards  
+Globs: **/*.tsx
+---
+
+# Frontend Guidelines
+
+- Always prefer functional React components (no class components).  
+- Use Bootstrap markup and CSS. Don't add unnecessary classes. 
+- Use Twitter Bootstrap classes in most if not all cases and then if nothing works use tailwind CSS.
+- Avoid inline styles; use CSS modules if custom styles are necessary.  
+- Components should have clear, descriptive naming.
+- Use React Bootstrap for navigation and make the navigation driven by JSON hard-coded in the nav
+- Use React Bootstrap library for making components, refer to their documentation on what components are available.
+- For all icons use bootstrap-icons
+- do not use react-bootstrap-icons use bootstrap-icons instead for all icons

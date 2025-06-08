@@ -1,72 +1,31 @@
-# Concert Aggregator Documentation
+# Project Documentation: Hometown Music Tracker
 
-Welcome to the Concert Aggregator documentation! This folder contains practical implementation guides and specifications for building a modern concert aggregation system.
+Welcome to the project documentation. This folder contains all the planning, architecture, and feature specification documents for the Hometown Music Tracker application.
 
 ## Documentation Structure
 
-### 🚀 [phase1-implementation.md](phase1-implementation.md)
-**Phase 1: Core Scraping API Implementation** ⭐ **START HERE**
-- Enhanced Puppeteer scraping with API endpoints
-- Data persistence (JSON files + optional Supabase)
-- Venue configuration system and error handling
-- Complete code examples and testing guides
+### ⭐ **Start Here**
+- **[`phase1-implementation.md`](./phase1-implementation.md)**: Technical guide for building the core scraping API.
 
-### 📋 [ROADMAP.md](ROADMAP.md)
-**Project Development Roadmap**
-- Simplified development phases
-- Version releases (v2.0 - v3.5)
-- Feature priorities and technical roadmap
+### 🗺️ **Project Planning**
+- **[`ROADMAP.md`](./ROADMAP.md)**: The development roadmap, outlining features from user accounts to the personalized feed.
+- **[`technical-architecture.md`](./technical-architecture.md)**: System architecture overview (Next.js + Supabase).
 
-### 🏗️ [technical-architecture.md](technical-architecture.md)
-**Technical Architecture Overview**
-- Next.js 14+ App Router system design
-- Supabase integration and authentication
-- Template-ready CRUD architecture
+### ✨ **Core Features**
+- **[`hometown-music-tracker.md`](./hometown-music-tracker.md)**: Detailed specification for the core user features, including venue/artist following and the personalized feed.
+- **[`scraping-modernization.md`](./scraping-modernization.md)**: Details on the flexible, Firecrawl-based scraping engine.
 
-### 🕷️ [scraping-modernization.md](scraping-modernization.md)
-**Phase 2: Firecrawl AI Integration**
-- AI-powered web scraping with Firecrawl.dev
-- Hybrid fallback system (Firecrawl → Puppeteer)
-- Custom venue endpoints and advanced processing
+### 🚀 **Future Enhancements**
+- **[`filtering-system.md`](./filtering-system.md)**: Advanced filtering capabilities for the feed.
+- **[`enhanced-sorting.md`](./enhanced-sorting.md)**: Intelligent sorting features.
+- **[`supabase-crud-template.md`](./supabase-crud-template.md)**: Notes on how this architecture can be adapted for other projects.
 
-### 🎯 [supabase-crud-template.md](supabase-crud-template.md)
-**Reusable CRUD Template Patterns**
-- Adaptable architecture for different domains
-- Multi-dashboard system design
-- Template customization strategies
+## How to Navigate This Documentation
 
-### 📊 [dashboard-spec.md](dashboard-spec.md)
-**Dashboard Interface Specification**
-- Analytics overview and status cards
-- Interactive components and responsive design
-
-### 🔍 [filtering-system.md](filtering-system.md)
-**Advanced Filtering System**
-- Multi-criteria filtering capabilities
-- Search functionality and API design
-
-### 🔄 [enhanced-sorting.md](enhanced-sorting.md)
-**Enhanced Sorting Features**
-- Advanced sorting algorithms
-- Personalization and smart sorting modes
-
-## Quick Navigation
-
-### 🚀 **Getting Started**
-**Start with [phase1-implementation.md](phase1-implementation.md)** - Complete guide for implementing the core scraping API with code examples and testing instructions.
-
-### 📋 **Planning & Architecture**
-Review [ROADMAP.md](ROADMAP.md) for development phases and [technical-architecture.md](technical-architecture.md) for system design overview.
-
-### 🔧 **Implementation Phases**
-1. **Phase 1**: [phase1-implementation.md](phase1-implementation.md) - Core scraping API
-2. **Phase 2**: [scraping-modernization.md](scraping-modernization.md) - Firecrawl AI integration
-
-### 🎯 **Template Development**
-Use [supabase-crud-template.md](supabase-crud-template.md) to adapt this architecture for other domains (e-commerce, real estate, job boards, etc.).
-
-### 📊 **Feature Specifications**
-Advanced features: [dashboard-spec.md](dashboard-spec.md), [filtering-system.md](filtering-system.md), [enhanced-sorting.md](enhanced-sorting.md)
+1.  **To understand the current work**, read the **[`phase1-implementation.md`](./phase1-implementation.md)** guide.
+2.  **To understand the project's vision**, start with the **[`ROADMAP.md`](./ROADMAP.md)**.
+3.  **To understand the user experience**, review the **[`hometown-music-tracker.md`](./hometown-music-tracker.md)** feature spec.
+4.  **For the high-level technical plan**, see **[`technical-architecture.md`](./technical-architecture.md)**.
 
 ## Current Project Status
 

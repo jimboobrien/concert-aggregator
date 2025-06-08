@@ -6,32 +6,36 @@ Transform the Concert Aggregator from a simple event listing tool into a compreh
 
 ## Planned Releases
 
-### Version 2.0 - Core API & Data Persistence (Q2 2024)
-- **Phase 1**: Enhanced Puppeteer scraping with Next.js API endpoints
-- **Data Storage**: Dual persistence (JSON files + optional Supabase)
-- **Venue Management**: Configurable scraping with flexible selectors
-- **Error Handling**: Robust logging and status tracking
-- **Template Foundation**: Basic CRUD architecture for reusability
+The project is now focused on delivering a personalized music tracker. The roadmap is adjusted to build these features incrementally.
 
-### Version 2.5 - AI-Powered Scraping (Q3 2024)
-- **Phase 2**: Firecrawl.dev integration for AI-powered extraction
-- **Hybrid System**: Automatic fallback from Firecrawl to Puppeteer
-- **Custom Endpoints**: Flexible venue scraping with configurable rules
-- **Advanced Validation**: Enhanced data processing and quality metrics
+### Version 2.0 - Core Scraping API (Current Focus)
+- ✅ **Flexible Scraping Engine**: Implement the `doCallForFirecrawl` service.
+- ✅ **Unified API Endpoint**: Build the `POST /api/scrape` route.
+- ✅ **Data Persistence**: Ensure data saves correctly to JSON and optionally Supabase.
+- **Goal**: Establish a robust, configuration-driven system for data collection.
 
-### Version 3.0 - Supabase Migration & User Features (Q4 2024)
-- **Supabase Integration**: Real-time database with authentication
-- **User Dashboard**: Save favorite venues and events
-- **CRUD Interface**: Admin dashboard for data management
-- **Real-time Updates**: Live event synchronization
-- **Search & Filtering**: Advanced filtering and sorting capabilities
+### Version 2.5 - User Accounts & Personalization (Q3 2024)
+- **Supabase Authentication**: Set up user login, logout, and profile management.
+- **Hometown Setup**: Allow users to set and update their hometown.
+- **Database Schemas**: Create the `profiles`, `venues`, and `artists` tables.
+- **Goal**: Build the foundational layer for user-specific data.
 
-### Version 3.5 - Community & Analytics (Q1 2025)
-- **User Interactions**: Reviews, ratings, and social features
-- **Event Recommendations**: AI-powered suggestions
-- **Analytics Dashboard**: Venue trends and market insights
-- **API Development**: Public API for third-party integrations
-- **Template Gallery**: Community-driven CRUD templates
+### Version 3.0 - Venue & Artist Following (Q4 2024)
+- **Venue Following**: Implement the ability to "follow" and "unfollow" venues.
+- **Artist Following**: Implement the ability to "follow" and "unfollow" artists.
+- **"My Profile" Dashboard**: Create a UI for users to see their followed venues and artists.
+- **Goal**: Connect users to the data that matters to them.
+
+### Version 3.5 - The Personalized Feed (Q1 2025)
+- **Personalized "Upcoming Shows" Feed**: Develop the main dashboard view.
+- **Dynamic Content**: The feed should only show events from followed artists or venues.
+- **UI/UX Polish**: Ensure the feed is intuitive, informative, and easy to use.
+- **Goal**: Deliver the core value proposition of the app—a personalized concert feed.
+
+### Version 4.0 - Notifications & Discovery
+- **Email Notifications**: Alert users when a followed artist posts a new show in their town.
+- **Artist Discovery Features**: Suggest new artists based on listening history or venue follows.
+- **Social Integration**: Allow users to see what shows their friends are attending.
 
 ## Current Status
 

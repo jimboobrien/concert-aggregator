@@ -1,404 +1,310 @@
-# Phase 1: Core Scraping API Implementation
+# Phase 1: Flexible Scraping API with Firecrawl
 
 ## Overview
 
-Phase 1 focuses on creating a solid foundation with enhanced Puppeteer scraping, Next.js API endpoints, and reliable data persistence. This phase gets the basic functionality working correctly before adding AI features.
+Phase 1 focuses on building a flexible and powerful scraping API centered around a unified `doCallForFirecrawl` abstraction. This approach allows for multiple data extraction methods—from AI-powered prompts to specific CSS selectors—all handled through a single, consistent interface. We will prioritize building this core service, its API endpoint, and reliable data persistence, setting a scalable foundation for future enhancements.
 
 ## Goals
 
-- ✅ **Enhanced Puppeteer scraping** with improved error handling
-- ✅ **Next.js API Routes** for scraping control
-- ✅ **Dual data persistence** (JSON files + optional Supabase)
-- ✅ **Venue configuration system** with flexible selectors
-- ✅ **Basic validation** and error logging
-- ✅ **Status tracking** and monitoring
+- ✅ **Unified Scraping Service** with a flexible, multi-modal extraction engine.
+- ✅ **Next.js API Route** for all scraping operations.
+- ✅ **Support for Multiple Extraction Methods** (AI Prompt, CSS Selectors).
+- ✅ **Dual Data Persistence** (JSON files + optional Supabase).
+- ✅ **Configuration-driven** approach for defining scraping jobs.
+- ✅ **Robust Validation** and error logging.
 
-## API Endpoints
+## Core Concept: The `doCallForFirecrawl` Abstraction
 
-### Core Endpoints (Phase 1)
+The entire scraping system is built around a single, powerful function signature. This design decouples the API endpoint from the underlying scraping technology, allowing us to evolve our methods without breaking the interface.
+
+```typescript
+// Core function signature
+doCallForFirecrawl(
+  url: string,
+  config: CrawlConfig
+): Promise<ScrapedData>;
 ```
-app/api/scrape/
-├── venue/[venueId]/route.ts    # POST /api/scrape/venue/[venueId]
-├── all/route.ts                # POST /api/scrape/all  
-└── status/route.ts             # GET /api/scrape/status
+
+- **`url`**: The target URL of the website to crawl.
+- **`config`**: An object specifying *how* to extract the data. This configuration can be tailored for different needs.
+
+## API Endpoint: A Single, Powerful Route
+
+We will consolidate all scraping logic into a single API endpoint, making the system cleaner and easier to maintain.
+
+```
+app/api/scrape/route.ts    # POST /api/scrape
 ```
 
 ### API Usage Examples
 
-#### Scrape Single Venue
+The endpoint is designed to be highly flexible, accepting different types of `crawlConfig` objects.
+
+#### Example 1: AI-Powered Extraction (Prompt-based)
+
+This method is ideal for complex pages where selectors are unreliable.
+
 ```bash
-POST /api/scrape/venue/orangepeel
+POST /api/scrape
 {
-  "force": false,
-  "saveToFiles": true,
-  "saveToSupabase": false
-}
-
-# Response
-{
-  "success": true,
-  "venue": "The Orange Peel",
-  "events": [...],
-  "count": 25,
-  "saved": {
-    "jsonFile": "output/orangepeel.json",
-    "database": false
+  "url": "https://www.thecaverns.com/events",
+  "crawlConfig": {
+    "mode": "ai_prompt",
+    "prompt": "Extract all concert events. For each event, get the title, date, and a link to buy tickets. Return the data as a JSON array of objects, with keys 'title', 'date', and 'ticketUrl'."
   },
-  "scrapedAt": "2024-03-01T10:00:00Z"
-}
-```
-
-#### Scrape All Venues
-```bash
-POST /api/scrape/all
-{
-  "venues": ["orangepeel", "caverns", "terminalwest", "district"],
-  "saveToFiles": true,
-  "saveToSupabase": false
-}
-
-# Response
-{
-  "success": true,
-  "results": {
-    "orangepeel": { "success": true, "count": 25 },
-    "caverns": { "success": true, "count": 18 },
-    "terminalwest": { "success": false, "error": "Connection timeout" },
-    "district": { "success": true, "count": 12 }
-  },
-  "totalEvents": 55,
-  "scrapedAt": "2024-03-01T10:00:00Z"
-}
-```
-
-#### Get Scraping Status
-```bash
-GET /api/scrape/status
-
-# Response
-{
-  "venues": {
-    "orangepeel": {
-      "lastScraped": "2024-03-01T10:00:00Z",
-      "status": "success",
-      "eventCount": 25,
-      "nextScheduled": "2024-03-01T16:00:00Z"
-    },
-    "caverns": {
-      "lastScraped": "2024-03-01T10:15:00Z",
-      "status": "failed", 
-      "error": "Selector not found: .eventMainWrapper",
-      "lastSuccess": "2024-02-28T10:15:00Z"
-    }
-  },
-  "systemStatus": "operational"
-}
-```
-
-## Enhanced Puppeteer Service
-
-### Core Service Implementation
-```typescript
-// lib/scraping/enhanced-puppeteer.ts
-import puppeteer, { Browser, Page } from 'puppeteer';
-import { VenueConfig, ScrapedEvent } from '@/types/scraping';
-
-export class EnhancedPuppeteerService {
-  private browser: Browser | null = null;
-
-  async initBrowser() {
-    if (!this.browser) {
-      this.browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-gpu'
-        ]
-      });
-    }
-    return this.browser;
+  "storageOptions": {
+    "saveToFiles": true,
+    "saveToSupabase": true,
+    "fileName": "caverns-ai-scraped.json"
   }
+}
+```
 
-  async scrapeVenue(venueConfig: VenueConfig): Promise<ScrapedEvent[]> {
-    const browser = await this.initBrowser();
-    const page = await browser.newPage();
-    
-    try {
-      await page.setUserAgent('Mozilla/5.0 (compatible; ConcertBot/1.0)');
-      
-      // Navigate with timeout and error handling
-      await page.goto(venueConfig.url, { 
-        waitUntil: 'networkidle2',
-        timeout: 30000 
-      });
+#### Example 2: Selector-Based Extraction
 
-      // Wait for content to load
-      if (venueConfig.waitForSelector) {
-        await page.waitForSelector(venueConfig.waitForSelector, { 
-          timeout: 15000 
-        });
+This method is efficient for well-structured websites with stable HTML.
+
+```bash
+POST /api/scrape
+{
+  "url": "https://theorangepeel.net/events/",
+  "crawlConfig": {
+    "mode": "selectors",
+    "schema": {
+      "container": ".eventMainWrapper",
+      "fields": {
+        "title": "#eventTitle",
+        "date": "#eventDate",
+        "ticketUrl": ".eventTicketLink a[href]"
       }
+    }
+  },
+  "storageOptions": {
+    "saveToFiles": true,
+    "fileName": "orangepeel-selector-scraped.json"
+  }
+}
+```
 
-      // Extract events with improved error handling
-      const events = await page.evaluate((config) => {
-        return this.extractEvents(config);
-      }, venueConfig);
+## Core Scraping Service (`firecrawl-service.ts`)
 
-      return this.validateAndNormalize(events, venueConfig.name);
-      
-    } catch (error) {
-      console.error(`Scraping failed for ${venueConfig.name}:`, error);
-      throw error;
-    } finally {
-      await page.close();
+This service acts as the central engine, interpreting the `CrawlConfig` and delegating to the appropriate Firecrawl method.
+
+```typescript
+// lib/scraping/firecrawl-service.ts
+import Firecrawl from 'firecrawl';
+import { CrawlConfig, ScrapedEvent } from '@/types/scraping';
+
+// Initialize the client once
+const firecrawlClient = new Firecrawl(process.env.FIRECRAWL_API_KEY!);
+
+export class FirecrawlService {
+  public async doCallForFirecrawl(
+    url: string,
+    config: CrawlConfig
+  ): Promise<ScrapedEvent[]> {
+    console.log(`Starting crawl for ${url} with mode: ${config.mode}`);
+
+    switch (config.mode) {
+      case 'ai_prompt':
+        return this.scrapeWithAIPrompt(url, config.prompt);
+      case 'selectors':
+        return this.scrapeWithSelectors(url, config.schema);
+      default:
+        throw new Error(`Unsupported crawl mode: ${config.mode}`);
     }
   }
 
-  private extractEvents(config: VenueConfig): any[] {
-    const events = [];
-    const containers = document.querySelectorAll(config.selectors.container);
-    
-    containers.forEach((container, index) => {
-      try {
-        const event = this.extractSingleEvent(container, config.selectors);
-        if (event && event.title && event.date) {
-          events.push(event);
+  private async scrapeWithAIPrompt(url: string, prompt: string): Promise<ScrapedEvent[]> {
+    // This is a conceptual example. The actual Firecrawl SDK call may differ.
+    const result = await firecrawlClient.scrape(url, {
+      extractor: {
+        mode: 'llm-extraction',
+        prompt: prompt,
+        json_schema: {
+          type: "object",
+          properties: {
+            events: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  title: { "type": "string" },
+                  date: { "type": "string" },
+                  ticketUrl: { "type": "string" }
+                },
+                required: ["title", "date"]
+              }
+            }
+          },
+          required: ["events"]
         }
-      } catch (error) {
-        console.warn(`Error extracting event ${index}:`, error);
       }
     });
     
-    return events;
+    // Assume result.data.llm_extraction.events is the array of events
+    return result.data?.llm_extraction?.events || [];
   }
 
-  private extractSingleEvent(element: Element, selectors: any): any {
-    return {
-      title: this.getTextContent(element, selectors.title),
-      date: this.getTextContent(element, selectors.date),
-      time: this.getTextContent(element, selectors.time) || 'TBA',
-      price: this.getTextContent(element, selectors.price) || 'TBA',
-      ticketUrl: this.getAttributeContent(element, selectors.ticketLink, 'href'),
-      description: this.getTextContent(element, selectors.description)
-    };
-  }
-
-  private getTextContent(element: Element, selector: string): string {
-    const found = element.querySelector(selector);
-    return found?.textContent?.trim() || '';
-  }
-
-  private getAttributeContent(element: Element, selector: string, attr: string): string {
-    const found = element.querySelector(selector);
-    return found?.getAttribute(attr) || '';
-  }
-
-  async cleanup() {
-    if (this.browser) {
-      await this.browser.close();
-      this.browser = null;
-    }
+  private async scrapeWithSelectors(url: string, schema: any): Promise<ScrapedEvent[]> {
+    // This is a conceptual example of how selector-based extraction could work.
+    // This might eventually use a library like Cheerio or a different Firecrawl feature.
+    console.log('Selector mode is a placeholder for future implementation.');
+    // For now, return an empty array or throw an error.
+    return [];
   }
 }
 ```
 
-## Venue Configuration System
+## Extraction Configuration (`types/scraping.d.ts`)
 
-### Configuration Structure
+We define clear types for our configuration objects to ensure type safety and clarity.
+
 ```typescript
-// lib/config/venues.ts
-export interface VenueConfig {
-  id: string;
-  name: string;
-  url: string;
-  enabled: boolean;
-  selectors: {
-    container: string;
+// types/scraping.d.ts
+
+export interface ScrapedEvent {
+  title: string;
+  date: string;
+  ticketUrl?: string;
+  venue?: string;
+  scrapedAt: string;
+}
+
+// Configuration for selector-based extraction
+export interface SelectorSchema {
+  container: string;
+  fields: {
     title: string;
     date: string;
-    time?: string;
-    price?: string;
-    ticketLink?: string;
-    description?: string;
+    ticketUrl?: string;
   };
-  waitForSelector?: string;
-  schedule?: string; // cron expression
 }
 
-export const venueConfigs: Record<string, VenueConfig> = {
-  orangepeel: {
-    id: 'orangepeel',
-    name: 'The Orange Peel',
-    url: 'https://theorangepeel.net/events/',
-    enabled: true,
-    selectors: {
-      container: '.eventMainWrapper',
-      title: '#eventTitle',
-      date: '#eventDate',
-      time: '.eventDateDetails',
-      price: '.eventPrice',
-      ticketLink: '.eventTicketLink a'
-    },
-    waitForSelector: '.eventMainWrapper',
-    schedule: '0 */6 * * *' // Every 6 hours
-  },
-  
-  caverns: {
-    id: 'caverns',
-    name: 'The Caverns',
-    url: 'https://www.thecaverns.com/events',
-    enabled: true,
-    selectors: {
-      container: '.event-item',
-      title: '.event-title',
-      date: '.event-date',
-      time: '.event-time',
-      price: '.ticket-price'
-    },
-    waitForSelector: '.event-item'
-  }
-  // ... other venues
-};
+// Union type for all possible crawl configurations
+export type CrawlConfig =
+  | { mode: 'ai_prompt'; prompt: string }
+  | { mode: 'selectors'; schema: SelectorSchema };
 
-export function getVenueConfig(venueId: string): VenueConfig | null {
-  return venueConfigs[venueId] || null;
-}
-
-export function getAllActiveVenues(): VenueConfig[] {
-  return Object.values(venueConfigs).filter(config => config.enabled);
+// Options for how to store the scraped data
+export interface StorageOptions {
+  saveToFiles: boolean;
+  saveToSupabase?: boolean;
+  fileName: string; // Used for JSON file output
+  outputDir?: string;
+  venueId?: string; // Used for Supabase foreign key
 }
 ```
 
-## Data Persistence Layer
+## API Route Implementation (`scrape/route.ts`)
 
-### Dual Storage System
+The API route ties everything together: it parses the request, calls the `FirecrawlService`, and persists the data using the `DataPersistenceService`.
+
 ```typescript
-// lib/storage/data-persistence.ts
-import fs from 'fs/promises';
-import path from 'path';
-import { createClient } from '@supabase/supabase-js';
+// app/api/scrape/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { FirecrawlService } from '@/lib/scraping/firecrawl-service';
+import { DataPersistenceService } from '@/lib/storage/data-persistence';
+import { CrawlConfig, StorageOptions } from '@/types/scraping';
 
-export interface StorageOptions {
-  saveToFiles: boolean;
-  saveToSupabase: boolean;
-  outputDir?: string;
-}
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const {
+      url,
+      crawlConfig,
+      storageOptions,
+    }: {
+      url: string;
+      crawlConfig: CrawlConfig;
+      storageOptions: StorageOptions;
+    } = body;
 
-export class DataPersistenceService {
-  private supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  async saveVenueData(
-    venueId: string, 
-    events: ScrapedEvent[], 
-    options: StorageOptions
-  ) {
-    const results = {
-      jsonFile: null as string | null,
-      database: false,
-      errors: [] as string[]
-    };
-
-    // Save to JSON files
-    if (options.saveToFiles) {
-      try {
-        const outputDir = options.outputDir || 'output';
-        await fs.mkdir(outputDir, { recursive: true });
-        
-        const filePath = path.join(outputDir, `${venueId}.json`);
-        await fs.writeFile(filePath, JSON.stringify(events, null, 2));
-        
-        results.jsonFile = filePath;
-        console.log(`Saved ${events.length} events to ${filePath}`);
-      } catch (error) {
-        results.errors.push(`JSON save failed: ${error.message}`);
-      }
+    if (!url || !crawlConfig || !storageOptions) {
+      return NextResponse.json({
+        success: false,
+        error: 'Missing required parameters: url, crawlConfig, or storageOptions',
+      }, { status: 400 });
     }
 
-    // Save to Supabase (optional)
-    if (options.saveToSupabase) {
-      try {
-        const { error } = await this.supabase
-          .from('events')
-          .upsert(
-            events.map(event => ({
-              ...event,
-              venue_id: venueId,
-              scraped_at: new Date().toISOString()
-            })),
-            { onConflict: 'title,date,venue_id' }
-          );
+    const scraper = new FirecrawlService();
+    const storage = new DataPersistenceService();
 
-        if (error) throw error;
-        results.database = true;
-        console.log(`Saved ${events.length} events to Supabase`);
-      } catch (error) {
-        results.errors.push(`Supabase save failed: ${error.message}`);
-      }
-    }
+    // 1. Perform scraping
+    const events = await scraper.doCallForFirecrawl(url, crawlConfig);
+    console.log(`Successfully scraped ${events.length} events from ${url}`);
 
-    return results;
-  }
+    // 2. Add metadata
+    const enrichedEvents = events.map(event => ({
+      ...event,
+      venue: storageOptions.venueId || new URL(url).hostname,
+      scrapedAt: new Date().toISOString(),
+    }));
 
-  async getStoredEvents(venueId: string, source: 'file' | 'database' = 'file') {
-    if (source === 'file') {
-      try {
-        const filePath = path.join('output', `${venueId}.json`);
-        const data = await fs.readFile(filePath, 'utf-8');
-        return JSON.parse(data);
-      } catch (error) {
-        return [];
-      }
-    } else {
-      const { data, error } = await this.supabase
-        .from('events')
-        .select('*')
-        .eq('venue_id', venueId)
-        .order('date', { ascending: true });
+    // 3. Save data
+    const saveResults = await storage.saveVenueData(
+      storageOptions,
+      enrichedEvents
+    );
 
-      return error ? [] : data;
-    }
+    return NextResponse.json({
+      success: true,
+      url,
+      count: enrichedEvents.length,
+      saved: saveResults,
+      data: enrichedEvents,
+    });
+
+  } catch (error) {
+    console.error('Scraping API Error:', error);
+    return NextResponse.json({
+      success: false,
+      error: error.message || 'An unknown error occurred',
+    }, { status: 500 });
   }
 }
 ```
 
 ## Testing & Validation
 
-### Basic Testing
+Update your `package.json` and use `curl` to test the new flexible endpoint.
+
 ```bash
-# Start development server
-npm run dev
-
-# Test single venue scraping
-curl -X POST http://localhost:3000/api/scrape/venue/orangepeel \
+# Test with AI Prompt
+curl -X POST http://localhost:3000/api/scrape \
   -H "Content-Type: application/json" \
-  -d '{"force": true, "saveToFiles": true}'
+  -d '{
+    "url": "https://www.thecaverns.com/events",
+    "crawlConfig": { "mode": "ai_prompt", "prompt": "Extract all concert events, getting the title and date." },
+    "storageOptions": { "saveToFiles": true, "fileName": "caverns.json", "venueId": "caverns" }
+  }'
 
-# Test all venues
-curl -X POST http://localhost:3000/api/scrape/all \
+# Test with Selectors (Placeholder for now)
+curl -X POST http://localhost:3000/api/scrape \
   -H "Content-Type: application/json" \
-  -d '{"saveToFiles": true, "saveToSupabase": false}'
-
-# Check status
-curl http://localhost:3000/api/scrape/status
+  -d '{
+    "url": "https://theorangepeel.net/events/",
+    "crawlConfig": {
+      "mode": "selectors",
+      "schema": { "container": ".eventMainWrapper", "fields": { "title": "#eventTitle" } }
+    },
+    "storageOptions": { "saveToFiles": true, "fileName": "orangepeel.json", "venueId": "orangepeel" }
+  }'
 ```
 
-### Success Criteria for Phase 1
-- ✅ All venue scrapers work via API endpoints
-- ✅ Data saves to JSON files reliably
-- ✅ Error handling and logging functional
-- ✅ Status endpoint provides useful information
-- ✅ Venue configurations are flexible and maintainable
-- ✅ Optional Supabase integration works when enabled
+## Success Criteria for Phase 1
 
-## Next Steps to Phase 2
+- ✅ A single `/api/scrape` endpoint handles all scraping requests.
+- ✅ The service can accept an AI prompt for data extraction.
+- ✅ The service is structured to accept a selector-based config in the future.
+- ✅ Scraped data is successfully saved to a JSON file.
+- ✅ (Optional) Scraped data is successfully saved to Supabase.
+- ✅ The system is decoupled from a specific scraping library (like Puppeteer).
 
-Once Phase 1 is complete and stable:
-1. Add Firecrawl.dev integration as primary scraping method
-2. Implement hybrid fallback system (Firecrawl → Puppeteer)
-3. Add custom venue endpoint with configurable extraction rules
-4. Enhanced data processing and quality metrics 
+## Next Steps
+
+With this flexible foundation, future work can focus on:
+1.  **Implementing Selector-Based Scraping**: Build out the `scrapeWithSelectors` method using a library like Cheerio or a specific Firecrawl feature.
+2.  **Building a UI**: Create a simple admin dashboard to trigger and monitor scraping jobs.
+3.  **Adding More Extractors**: Introduce other modes, such as `hybrid` (AI + selectors), as needed.
+4.  **Error Handling & Retries**: Implement more sophisticated error handling and automatic retry logic for failed jobs. 

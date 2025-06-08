@@ -1,6 +1,26 @@
-# Concert Aggregator
+# Hometown Music Tracker (formerly Concert Aggregator)
 
-A web scraping application that aggregates upcoming concert events from multiple music venues and displays them in a unified, sortable web interface.
+This project is a personalized concert tracking application designed to help you keep up with your favorite artists and venues in your hometown.
+
+The goal is to move beyond generic event listings and create a focused, user-centric tool that answers one simple question: "What are the shows I *actually* care about that are happening near me?"
+
+## Core Features
+
+- **Personalized Feed**: The main dashboard shows you upcoming shows from only the artists and venues you choose to follow.
+- **Venue Tracking**: Follow your favorite local music spots, from small clubs to large arenas.
+- **Artist Tracking**: Follow specific artists to get notified when they announce a show in your town.
+- **Automated Scraping**: Uses a flexible, modern scraping engine (`Firecrawl`) to automatically gather event data from venue websites.
+- **Built with Next.js & Supabase**: A modern, full-stack application leveraging the best of the React ecosystem and a powerful BaaS.
+
+## Project Status & Next Steps
+
+The project is currently in **Phase 1** of development, focused on building the core data collection engine.
+
+1.  **Phase 1: Core Scraping API**: Build the flexible, Firecrawl-powered scraping service.
+2.  **Phase 2: User Accounts & Personalization**: Introduce user profiles and the ability to set a hometown and follow artists/venues.
+3.  **Phase 3: The Personalized Feed**: Develop the main user-facing dashboard.
+
+For detailed technical plans, see the `/docs` directory. Start with the [Phase 1 Implementation Guide](./docs/phase1-implementation.md).
 
 ## Overview
 

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "home",
+    "label": "Home",
+    "href": "/",
+    "icon": "bi-house-door"
+  },
+  {
+    "id": "feed",
+    "label": "My Feed",
+    "href": "/feed",
+    "icon": "bi-rss",
+    "auth": true
+  },
+  {
+    "id": "dashboard",
+    "label": "Dashboard",
+    "href": "/dashboard",
+    "icon": "bi-grid",
+    "auth": true
+  },
+  {
+    "id": "discover",
+    "label": "Discover",
+    "href": "/discover",
+    "icon": "bi-compass"
+  },
+  {
+    "id": "profile",
+    "label": "Profile",
+    "href": "/profile",
+    "icon": "bi-person-circle",
+    "auth": true
+  }
+] 

@@ -260,6 +260,71 @@ app/api/scrape/
 4. **Dual storage**: Save to JSON files AND optionally to Supabase
 5. **Basic logging** and status tracking
 
+## Firecrawl Service Implementation
+
+The core of the Firecrawl integration is encapsulated within the `FirecrawlService` class, located at `src/services/firecrawl.ts`. This service provides a dedicated, reusable interface for interacting with the Firecrawl API.
+
+### `FirecrawlService` Class
+
+This class is designed as a singleton provider for all Firecrawl-related operations.
+
+- **Constructor**: Initializes the Firecrawl client using the `FIRECRAWL_API_KEY` from the environment variables. It will throw an error if the key is not set, preventing the application from running with a misconfigured service.
+- **`scrapeUrl(url: string)`**: An asynchronous method that takes a URL, sends it to the Firecrawl API, and returns a promise that resolves to a `ScrapedData` object.
+
+### The `scrapeUrl` Method
+
+This is the primary method for scraping a single URL. Its logic is as follows:
+
+1.  **API Call**: It calls `this.client.scrapeUrl(url)` to perform the scrape.
+2.  **Type Guard**: It uses a type guard (`'markdown' in result`) to check if the response is a successful scrape result or an error. This is a robust way to handle the union type returned by the SDK.
+3.  **Data Transformation**: If successful, it transforms the raw response from Firecrawl into the application-defined `ScrapedData` format, which includes the markdown content, the original URL, a timestamp, and key metadata.
+4.  **Error Handling**: If the scrape fails, or if the response does not contain markdown, it throws an error. This ensures that downstream consumers of the service receive a consistent and predictable data structure.
+
+### Code Example
+
+Here is the complete implementation of the service:
+
+```typescript
+// src/services/firecrawl.ts
+import Firecrawl from '@mendable/firecrawl-js';
+import { ScrapedData } from '../types';
+
+export class FirecrawlService {
+  private client: Firecrawl;
+
+  constructor() {
+    if (!process.env.FIRECRAWL_API_KEY) {
+      throw new Error('FIRECRAWL_API_KEY is not set');
+    }
+    this.client = new Firecrawl({ apiKey: process.env.FIRECRAWL_API_KEY });
+  }
+
+  async scrapeUrl(url: string): Promise<ScrapedData> {
+    try {
+      const result = await this.client.scrapeUrl(url);
+
+      if (result && 'markdown' in result && result.markdown) {
+        return {
+          markdown: result.markdown,
+          url: url,
+          timestamp: new Date().toISOString(),
+          metadata: {
+            title: result.metadata?.title,
+            description: result.metadata?.description,
+            keywords: result.metadata?.keywords,
+          },
+        };
+      } else {
+        throw new Error('Scraping did not return markdown content.');
+      }
+    } catch (error) {
+      console.error(`Error scraping ${url}:`, error);
+      throw new Error(`Failed to scrape ${url}`);
+    }
+  }
+}
+```
+
 ### Phase 2: AI-Powered Scraping with Firecrawl
 **Focus**: Add Firecrawl.dev integration as primary scraping method
 

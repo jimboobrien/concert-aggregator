@@ -1,0 +1,140 @@
+{
+  "phases": [
+    {
+      "id": "phase-1",
+      "title": "Version 2.0 - Core Scraping API",
+      "description": "Establish a robust, configuration-driven system for data collection.",
+      "status": "in-progress",
+      "tasks": [
+        {
+          "id": "1.1",
+          "title": "Implement Flexible Scraping Engine",
+          "description": "Create the core `crawlConcertVenue` service using Firecrawl, supporting multiple extraction modes.",
+          "status": "complete"
+        },
+        {
+          "id": "1.2",
+          "title": "Build Unified API Endpoint",
+          "description": "Develop the `POST /api/scrape` route to handle all scraping requests.",
+          "status": "complete"
+        },
+        {
+          "id": "1.3",
+          "title": "Set Up Data Persistence",
+          "description": "Ensure scraped data saves correctly to JSON files and optionally to a Supabase `events` table.",
+          "status": "complete"
+        },
+        {
+          "id": "1.4",
+          "title": "Define Configuration Types",
+          "description": "Create TypeScript types for `CrawlConfig` and `StorageOptions` in `types/scraping.d.ts`.",
+          "status": "complete"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "title": "Version 2.5 - User Accounts & Personalization",
+      "description": "Build the foundational layer for user-specific data and interactions.",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "2.1",
+          "title": "Set Up Supabase Authentication",
+          "description": "Implement user login, logout, and profile management using Supabase Auth.",
+          "status": "complete"
+        },
+        {
+          "id": "2.2",
+          "title": "Create User Profiles Table",
+          "description": "Design and create the `profiles` table with a foreign key to `auth.users`.",
+          "status": "pending"
+        },
+        {
+          "id": "2.3",
+          "title": "Implement Hometown Feature",
+          "description": "Allow users to set and update their hometown in their profile.",
+          "status": "pending"
+        },
+        {
+          "id": "2.4",
+          "title": "Create Core Data Tables",
+          "description": "Design and implement the `venues` and `artists` tables in Supabase.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "title": "Version 3.0 - Venue & Artist Following",
+      "description": "Connect users to the data that matters most to them.",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "3.1",
+          "title": "Implement Venue Following Logic",
+          "description": "Create the `followed_venues` table and the backend logic to follow/unfollow venues.",
+          "status": "pending"
+        },
+        {
+          "id": "3.2",
+          "title": "Implement Artist Following Logic",
+          "description": "Create the `followed_artists` table and the backend logic to follow/unfollow artists.",
+          "status": "pending"
+        },
+        {
+          "id": "3.3",
+          "title": "Build 'My Profile' Dashboard",
+          "description": "Create a UI where users can view and manage their followed artists and venues.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "title": "Version 3.5 - The Personalized Feed",
+      "description": "Deliver the core value proposition of the app: a personalized concert feed.",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "4.1",
+          "title": "Develop Personalized Feed Logic",
+          "description": "Write the Supabase query to fetch events based on a user's followed artists and venues.",
+          "status": "pending"
+        },
+        {
+          "id": "4.2",
+          "title": "Build the Feed UI",
+          "description": "Create the React components to display the upcoming shows in a clean, chronological list.",
+          "status": "pending"
+        },
+        {
+          "id": "4.3",
+          "title": "Implement Empty State UI",
+          "description": "Design a component that guides new users to follow artists/venues if their feed is empty.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "title": "Version 4.0 - Notifications & Discovery",
+      "description": "Enhance user engagement with notifications and music discovery features.",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "5.1",
+          "title": "Set Up Email Notifications",
+          "description": "Implement a service (e.g., Supabase Edge Functions with Resend) to email users about new shows.",
+          "status": "pending"
+        },
+        {
+          "id": "5.2",
+          "title": "Develop Artist Discovery Algorithm",
+          "description": "Create a simple recommendation engine to suggest new artists to users.",
+          "status": "pending"
+        }
+      ]
+    }
+  ]
+} 

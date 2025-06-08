@@ -1,0 +1,9 @@
+{
+  "scripts" : {
+    "generatejson": "node scripts/orangepeel.js && node scripts/thecaverns.js && node scripts/terminalwest.js && node scripts/district.js",
+    "start": "npm run generatejson"
+  },
+  "dependencies": {
+    "puppeteer": "^22.15.0"
+  }
+}

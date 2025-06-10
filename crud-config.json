@@ -1,0 +1,30 @@
+[
+  {
+    "table_name": "artists",
+    "allow_create": ["admin"],
+    "allow_read": ["all"],
+    "allow_update": ["admin"],
+    "allow_delete": ["admin"]
+  },
+  {
+    "table_name": "venues",
+    "allow_create": ["admin"],
+    "allow_read": ["all"],
+    "allow_update": ["admin"],
+    "allow_delete": ["admin"]
+  },
+  {
+    "table_name": "submitted_artists",
+    "allow_create": ["user", "admin"],
+    "allow_read": ["admin"],
+    "allow_update": ["admin"],
+    "allow_delete": ["admin"]
+  },
+  {
+    "table_name": "submitted_venues",
+    "allow_create": ["user", "admin"],
+    "allow_read": ["admin"],
+    "allow_update": ["admin"],
+    "allow_delete": ["admin"]
+  }
+] 

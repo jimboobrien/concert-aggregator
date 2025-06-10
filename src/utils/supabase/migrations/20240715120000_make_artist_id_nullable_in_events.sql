@@ -1,0 +1,1 @@
+ALTER TABLE public.events ALTER COLUMN artist_id DROP NOT NULL; 

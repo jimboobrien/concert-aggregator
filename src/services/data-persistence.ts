@@ -1,12 +1,29 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { ScrapedData } from '../types';
+import { ScrapedData, StorageOptions, ConcertEvent } from '../types';
+import { createAdminClient } from '@/utils/supabase/admin-client';
+import { formatScrapedData, prepareForSupabase } from '@/utils/format-scraped-data';
+import { ScrapedEvent } from '@/types/scraping';
+
+// Define a type that represents potential JSON data we might receive
+type RawJsonData = {
+  url?: string;
+  timestamp?: string;
+  json?: {
+    events?: ConcertEvent[];
+  };
+  events?: ConcertEvent[];
+} | ConcertEvent[];
 
 export class DataPersistenceService {
   private dataDir: string;
+  private supabase;
 
-  constructor() {
-    this.dataDir = path.join(process.cwd(), 'scraped-data');
+  constructor(customDataDir?: string) {
+    // Allow custom data directory for testing or user preferences
+    this.dataDir = customDataDir || path.join(process.cwd(), 'scraped-data');
+    // Use the admin client for database operations
+    this.supabase = createAdminClient();
   }
 
   private async ensureDirectoryExists(): Promise<void> {
@@ -18,17 +35,228 @@ export class DataPersistenceService {
     }
   }
 
-  async save(data: ScrapedData): Promise<string> {
-    await this.ensureDirectoryExists();
-    const filename = `${new URL(data.url).hostname}-${Date.now()}.json`;
-    const filePath = path.join(this.dataDir, filename);
+  /**
+   * Generate a consistent filename based on the URL and timestamp
+   */
+  private generateFilename(url: string): string {
+    const hostname = new URL(url).hostname;
+    const timestamp = Date.now();
+    return `${hostname}-${timestamp}.json`;
+  }
 
+  /**
+   * Save ScrapedData directly to file and/or Supabase
+   */
+  async save(data: ScrapedData, options: StorageOptions, venueId?: string): Promise<string> {
+    let savePath = 'No file saved.';
+
+    if (options.saveToJson) {
+      await this.ensureDirectoryExists();
+      const filename = this.generateFilename(data.url);
+      const filePath = path.join(this.dataDir, filename);
+
+      try {
+        // We're using the already formatted data directly
+        await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+        savePath = filePath;
+        console.log(`Successfully saved data to ${filePath}`);
+      } catch (error) {
+        console.error(`Error saving data to ${filePath}:`, error);
+        throw new Error('Could not save scraped data to JSON.');
+      }
+    }
+
+    if (options.saveToSupabase && data.json?.events && venueId) {
+      try {
+        // Use the prepareForSupabase utility to format data for Supabase
+        const eventsToSave = prepareForSupabase(data, venueId);
+        
+        const { error } = await this.supabase
+          .from('events')
+          .upsert(eventsToSave);
+
+        if (error) {
+          throw error;
+        }
+        console.log('Successfully saved events to Supabase.');
+      } catch (error) {
+        console.error('Error saving data to Supabase:', error);
+        throw new Error('Could not save scraped data to Supabase.');
+      }
+    }
+
+    return savePath;
+  }
+  
+  /**
+   * Process and save scraped events from FirecrawlService
+   */
+  async saveScrapedEvents(
+    url: string,
+    events: ScrapedEvent[],
+    options: StorageOptions,
+    venueId?: string,
+    venueName?: string
+  ): Promise<string> {
+    // Validate that we have actual events to save
+    if (!events || events.length === 0) {
+      console.warn('No events to save. Skipping persistence.');
+      return 'No data saved: empty events array.';
+    }
+    
+    // Format the scraped events to our standardized structure
+    const formattedData = formatScrapedData(url, events, venueName);
+    
+    // Additional validation to ensure we have proper data
+    if (!formattedData.json?.events || formattedData.json.events.length === 0) {
+      console.warn('Formatted data contains no events. Skipping persistence.');
+      return 'No data saved: formatting resulted in empty events.';
+    }
+    
+    // Use the existing save method with the formatted data
+    return this.save(formattedData, options, venueId);
+  }
+  
+  /**
+   * Save raw JSON data directly to a file with our standard format
+   */
+  async saveRawJsonToFile(
+    url: string, 
+    jsonData: RawJsonData,
+    customFilename?: string
+  ): Promise<string> {
+    await this.ensureDirectoryExists();
+    
+    // Use custom filename if provided, otherwise generate one
+    const filename = customFilename || this.generateFilename(url);
+    const filePath = path.join(this.dataDir, filename);
+    
     try {
-      await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+      // Wrap the JSON data in our standard format if it's not already
+      if (!('url' in jsonData && jsonData.url) || 
+          !('timestamp' in jsonData && jsonData.timestamp) || 
+          !('json' in jsonData && jsonData.json?.events)) {
+        
+        const wrappedData: ScrapedData = {
+          url,
+          timestamp: new Date().toISOString(),
+          metadata: {
+            sourceURL: url,
+          },
+          json: {
+            events: Array.isArray(jsonData) 
+              ? jsonData 
+              : ('events' in jsonData && Array.isArray(jsonData.events)) 
+                ? jsonData.events 
+                : []
+          },
+          markdown: null
+        };
+        
+        await fs.writeFile(filePath, JSON.stringify(wrappedData, null, 2), 'utf-8');
+      } else {
+        // Data is already in our format, save it directly
+        await fs.writeFile(filePath, JSON.stringify(jsonData, null, 2), 'utf-8');
+      }
+      
+      console.log(`Successfully saved JSON data to ${filePath}`);
       return filePath;
     } catch (error) {
-      console.error(`Error saving data to ${filePath}:`, error);
-      throw new Error('Could not save scraped data.');
+      console.error(`Error saving JSON data to ${filePath}:`, error);
+      throw new Error('Could not save JSON data to file.');
+    }
+  }
+
+  /**
+   * Save raw JSON data directly to Supabase with our standard format
+   * This method handles the conversion from file format to database format
+   */
+  async saveJsonToSupabase(
+    jsonData: RawJsonData,
+    venueId: string,
+    normalizeData: boolean = true
+  ): Promise<number> {
+    try {
+      let standardizedData: ScrapedData;
+      let url: string = '';
+      
+      // First, ensure we have properly formatted data
+      if ('url' in jsonData && jsonData.url && 
+          'timestamp' in jsonData && jsonData.timestamp && 
+          'json' in jsonData && jsonData.json?.events) {
+        // Data is already in our standard format
+        standardizedData = jsonData as ScrapedData;
+        url = jsonData.url;
+      } else {
+        // Wrap the data in our standard format
+        url = ('url' in jsonData && jsonData.url) ? jsonData.url : 'unknown-source';
+        
+        standardizedData = {
+          url,
+          timestamp: new Date().toISOString(),
+          metadata: {
+            sourceURL: url,
+            importedAt: new Date().toISOString()
+          },
+          json: {
+            events: Array.isArray(jsonData) 
+              ? jsonData 
+              : ('events' in jsonData && Array.isArray(jsonData.events)) 
+                ? jsonData.events 
+                : []
+          },
+          markdown: null
+        };
+      }
+      
+      // Use the prepareForSupabase utility to format data for database insertion
+      const eventsToSave = prepareForSupabase(standardizedData, venueId);
+      
+      // Skip if there are no events to save
+      if (!eventsToSave.length) {
+        console.warn('No events to save to Supabase.');
+        return 0;
+      }
+      
+      // Handle data normalization if needed
+      const finalEvents = normalizeData 
+        ? eventsToSave.map(event => {
+            // Create a new object with normalized values
+            return {
+              ...event,
+              // Ensure event_date is in proper ISO format
+              event_date: new Date(event.event_date).toISOString(),
+              // Safely handle string properties
+              title: event.title,
+              url: event.url,
+              description: event.description,
+              // Add import metadata
+              imported_at: new Date().toISOString(),
+              source_url: url
+            };
+          })
+        : eventsToSave;
+      
+      // Insert data into Supabase with conflict handling
+      const { data, error } = await this.supabase
+        .from('events')
+        .upsert(finalEvents, {
+          onConflict: 'venue_id,title,event_date',
+          ignoreDuplicates: true
+        })
+        .select('id');
+      
+      if (error) {
+        throw error;
+      }
+      
+      const insertedCount = data?.length || 0;
+      console.log(`Successfully saved ${insertedCount} events to Supabase.`);
+      
+      return insertedCount;
+    } catch (error) {
+      console.error('Error saving JSON data to Supabase:', error);
+      throw new Error('Could not save JSON data to Supabase.');
     }
   }
 } 

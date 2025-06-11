@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { getScrapeData } from './actions'
 import { ScrapedData } from '@/types'
+import Link from 'next/link'
 
 export default function DashboardClientPage() {
   const [url, setUrl] = useState('https://www.thecaverns.com/shows')
@@ -30,21 +31,38 @@ export default function DashboardClientPage() {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="mb-4">
-        <div className="input-group">
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="form-control"
-            placeholder="Enter URL to scrape"
-            disabled={loading}
-          />
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Scraping...' : 'Scrape'}
-          </button>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1>Dashboard</h1>
+        <Link href="/dashboard/import" className="btn btn-outline-primary">
+          Advanced Import Options
+        </Link>
+      </div>
+
+      <div className="card mb-4">
+        <div className="card-header bg-light">
+          <h5 className="mb-0">Quick Scrape</h5>
         </div>
-      </form>
+        <div className="card-body">
+          <form onSubmit={handleSubmit} className="mb-0">
+            <div className="input-group">
+              <input
+                type="text"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="form-control"
+                placeholder="Enter URL to scrape"
+                disabled={loading}
+              />
+              <button type="submit" className="btn btn-primary" disabled={loading}>
+                {loading ? 'Scraping...' : 'Scrape'}
+              </button>
+            </div>
+            <div className="form-text mt-2">
+              Quick scrape saves to a JSON file. For more options including direct Supabase import, use the Advanced Import Options.
+            </div>
+          </form>
+        </div>
+      </div>
 
       {error && <div className="alert alert-danger">{error}</div>}
 

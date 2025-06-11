@@ -21,8 +21,15 @@
         {
           "id": "1.3",
           "title": "Set Up Data Persistence",
-          "description": "Ensure scraped data saves correctly to JSON files and optionally to a Supabase `events` table.",
-          "status": "complete"
+          "description": "Ensure scraped data saves correctly to JSON files and optionally to a Supabase `events` table with standardized format and UI import capabilities.",
+          "status": "complete",
+          "enhancements": [
+            "Implemented standardized JSON format for consistency",
+            "Created data normalization utilities",
+            "Added direct JSON-to-Supabase import via API",
+            "Built user-friendly file upload interface for imports",
+            "Added comprehensive documentation for import features"
+          ]
         },
         {
           "id": "1.4",
@@ -120,19 +127,119 @@
       "id": "phase-5",
       "title": "Version 4.0 - Notifications & Discovery",
       "description": "Enhance user engagement with notifications and music discovery features.",
-      "status": "pending",
+      "status": "complete",
       "tasks": [
         {
           "id": "5.1",
-          "title": "Set Up Email Notifications",
-          "description": "Implement a service (e.g., Supabase Edge Functions with Resend) to email users about new shows.",
-          "status": "pending"
+          "title": "Set Up Email Notifications with SendGrid",
+          "description": "Implement a Supabase Edge Function to send transactional emails (e.g., new show notifications) via the SendGrid API.",
+          "status": "complete"
         },
         {
           "id": "5.2",
           "title": "Develop Artist Discovery Algorithm",
           "description": "Create a simple recommendation engine to suggest new artists to users.",
-          "status": "pending"
+          "status": "complete"
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "title": "Version 4.5 - Community & Content Management",
+      "description": "Empower users to contribute content and establish a robust moderation workflow.",
+      "status": "in-progress",
+      "tasks": [
+        {
+          "id": "6.1",
+          "title": "Foundational Setup",
+          "description": "Lay the groundwork for all community and admin features.",
+          "status": "pending",
+          "subtasks": [
+            {
+              "id": "6.1.1",
+              "title": "Design & Document Features",
+              "description": "Create docs for community features, user roles, and moderation.",
+              "status": "pending"
+            },
+            {
+              "id": "6.1.2",
+              "title": "Implement Config-Driven CRUD",
+              "description": "Create crud-config.json and the automated scaffolding script to manage and generate CRUD interfaces.",
+              "status": "pending"
+            },
+            {
+              "id": "6.1.3",
+              "title": "Create Database Migrations",
+              "description": "Create tables for submitted_artists, submitted_venues, and user_roles, and update the venues table.",
+              "status": "pending"
+            }
+          ]
+        },
+        {
+          "id": "6.2",
+          "title": "User Content Submission",
+          "description": "Build the forms and APIs for users to submit new content.",
+          "status": "pending",
+          "subtasks": [
+            {
+              "id": "6.2.1",
+              "title": "Create Artist Submission Form",
+              "description": "Build the UI at /artists/submit and the API endpoint to save data to the submitted_artists table.",
+              "status": "pending"
+            },
+            {
+              "id": "6.2.2",
+              "title": "Create Venue Submission Form",
+              "description": "Build the UI at /venues/submit and the API endpoint to save data to the submitted_venues table.",
+              "status": "pending"
+            }
+          ]
+        },
+        {
+          "id": "6.3",
+          "title": "Admin Moderation Interface",
+          "description": "Develop the admin-only screens for reviewing submitted content.",
+          "status": "pending",
+          "subtasks": [
+            {
+              "id": "6.3.1",
+              "title": "Create Secure Admin Layout",
+              "description": "Build a wrapper component that checks for the 'admin' role before rendering its children.",
+              "status": "pending"
+            },
+            {
+              "id": "6.3.2",
+              "title": "Build 'Submitted Artists' Review Page",
+              "description": "Create an admin page to list all artists with a 'pending_review' status.",
+              "status": "pending"
+            },
+            {
+              "id": "6.3.3",
+              "title": "Build 'Submitted Venues' Review Page",
+              "description": "Create an admin page to list all venues with a 'pending_review' status.",
+              "status": "pending"
+            }
+          ]
+        },
+        {
+          "id": "6.4",
+          "title": "Admin Moderation Logic",
+          "description": "Implement the backend logic for approving and rejecting submissions.",
+          "status": "pending",
+          "subtasks": [
+            {
+              "id": "6.4.1",
+              "title": "Implement Artist Approval/Rejection",
+              "description": "Create the server-side logic to move an artist from 'submitted_artists' to 'artists' or mark it as rejected.",
+              "status": "pending"
+            },
+            {
+              "id": "6.4.2",
+              "title": "Implement Venue Approval/Rejection",
+              "description": "Create the server-side logic to move a venue from 'submitted_venues' to 'venues' or mark it as rejected.",
+              "status": "pending"
+            }
+          ]
         }
       ]
     }

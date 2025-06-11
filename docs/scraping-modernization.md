@@ -260,86 +260,104 @@ app/api/scrape/
 4. **Dual storage**: Save to JSON files AND optionally to Supabase
 5. **Basic logging** and status tracking
 
-## Firecrawl Service Implementation
+## `FirecrawlService` Implementation
 
-The core of the Firecrawl integration is encapsulated within the `FirecrawlService` class, located at `src/services/firecrawl.ts`. This service provides a dedicated, reusable interface for interacting with the Firecrawl API.
+The core of the scraping functionality is encapsulated within the `FirecrawlService`, located at `src/services/firecrawl.ts`. This service provides a unified interface for interacting with the Firecrawl API and is responsible for both generic and specialized scraping tasks.
 
-### `FirecrawlService` Class
+### Service Overview
 
-This class is designed as a singleton provider for all Firecrawl-related operations.
-
-- **Constructor**: Initializes the Firecrawl client using the `FIRECRAWL_API_KEY` from the environment variables. It will throw an error if the key is not set, preventing the application from running with a misconfigured service.
-- **`scrapeUrl(url: string)`**: An asynchronous method that takes a URL, sends it to the Firecrawl API, and returns a promise that resolves to a `ScrapedData` object.
-
-### The `scrapeUrl` Method
-
-This is the primary method for scraping a single URL. Its logic is as follows:
-
-1.  **API Call**: It calls `this.client.scrapeUrl(url)` to perform the scrape.
-2.  **Type Guard**: It uses a type guard (`'markdown' in result`) to check if the response is a successful scrape result or an error. This is a robust way to handle the union type returned by the SDK.
-3.  **Data Transformation**: If successful, it transforms the raw response from Firecrawl into the application-defined `ScrapedData` format, which includes the markdown content, the original URL, a timestamp, and key metadata.
-4.  **Error Handling**: If the scrape fails, or if the response does not contain markdown, it throws an error. This ensures that downstream consumers of the service receive a consistent and predictable data structure.
-
-### Code Example
-
-Here is the complete implementation of the service:
+The `FirecrawlService` is designed to be the single point of entry for all Firecrawl-related operations. It handles API key management, client initialization, and provides methods for different scraping strategies.
 
 ```typescript
 // src/services/firecrawl.ts
+
 import Firecrawl from '@mendable/firecrawl-js';
-import { ScrapedData } from '../types';
+import { z } from 'zod';
+import { ScrapedData, CrawlConfig, ScrapedEvent, SelectorSchema, ConcertEvent } from '../types';
+
+// Zod schemas for data validation
+const EventSchema = z.object({ /* ... */ });
+const ExtractionSchema = z.object({ /* ... */ });
 
 export class FirecrawlService {
   private client: Firecrawl;
 
   constructor() {
-    if (!process.env.FIRECRAWL_API_KEY) {
-      throw new Error('FIRECRAWL_API_KEY is not set');
-    }
-    this.client = new Firecrawl({ apiKey: process.env.FIRECRAWL_API_KEY });
+    // Initializes the Firecrawl client with the API key from environment variables
   }
 
-  async scrapeUrl(url: string): Promise<ScrapedData> {
-    try {
-      const result = await this.client.scrapeUrl(url);
-
-      if (result && 'markdown' in result && result.markdown) {
-        return {
-          markdown: result.markdown,
-          url: url,
-          timestamp: new Date().toISOString(),
-          metadata: {
-            title: result.metadata?.title,
-            description: result.metadata?.description,
-            keywords: result.metadata?.keywords,
-          },
-        };
-      } else {
-        throw new Error('Scraping did not return markdown content.');
-      }
-    } catch (error) {
-      console.error(`Error scraping ${url}:`, error);
-      throw new Error(`Failed to scrape ${url}`);
-    }
-  }
+  // ... methods
 }
 ```
 
-### Phase 2: AI-Powered Scraping with Firecrawl
-**Focus**: Add Firecrawl.dev integration as primary scraping method
+### Methods
 
-**Enhanced Features:**
-- **Firecrawl integration** with AI-powered extraction
-- **Hybrid fallback system** (Firecrawl → Puppeteer)
-- **Custom venue endpoint** with configurable extraction rules
-- **Advanced data processing** and quality metrics
+#### 1. `scrapeUrl(url: string)`
 
-**Additional API Endpoints:**
+This is a generic method designed to scrape any given URL and return a `ScrapedData` object. It attempts to extract structured data based on a predefined `ExtractionSchema` but will fall back to returning the raw markdown content if the structured extraction fails.
+
+-   **Returns**: `Promise<ScrapedData>`
+-   **Usage**: Ideal for general-purpose scraping where the primary goal is to get content from a page without a highly specific structure.
+
+**Example:**
+
+```typescript
+// In a server action or API route
+const firecrawlService = new FirecrawlService();
+const data = await firecrawlService.scrapeUrl('https://example.com/blog');
+
+// `data` will contain the scraped content, metadata, and a timestamp.
 ```
-app/api/scrape/
-├── custom/route.ts             # POST /api/scrape/custom
-├── presets/route.ts            # GET/POST /api/scrape/presets
-└── presets/[name]/route.ts     # GET /api/scrape/presets/[name]
+
+#### 2. `crawlConcertVenue(url: string, config: CrawlConfig)`
+
+This is the specialized method for scraping concert venues. It's more powerful than `scrapeUrl` because it accepts a `CrawlConfig` object, allowing for more control over the extraction process.
+
+-   **Returns**: `Promise<ScrapedEvent[]>` - An array of validated event objects.
+-   **Usage**: This is the preferred method for all concert and event scraping.
+
+The `CrawlConfig` object determines the scraping mode:
+
+##### Mode: `ai_prompt`
+
+This mode uses a natural language prompt to instruct the Firecrawl AI on what data to extract. This is the most flexible and powerful mode.
+
+-   `config.prompt`: A string containing the instructions for the AI (e.g., "Extract all event titles, dates, and ticket URLs from this page.").
+
+**Example:**
+
+```typescript
+// In a server action or API route
+const firecrawlService = new FirecrawlService();
+
+const crawlConfig: CrawlConfig = {
+  mode: 'ai_prompt',
+  prompt: 'Find all concerts, including the name of the show, the date, and a link to buy tickets.'
+};
+
+const events = await firecrawlService.crawlConcertVenue('https://www.thecaverns.com/shows', crawlConfig);
+
+// `events` will be an array of objects, each containing a title, date, and ticketUrl.
+```
+
+##### Mode: `selectors`
+
+This mode is a placeholder for a more traditional scraping approach using CSS selectors. It is not yet fully implemented.
+
+-   `config.schema`: A `SelectorSchema` object that maps data fields to CSS selectors.
+
+**Example (Conceptual):**
+
+```typescript
+const crawlConfig: CrawlConfig = {
+  mode: 'selectors',
+  schema: {
+    title: '.event-title',
+    date: '.event-date',
+    ticketUrl: '.ticket-link'
+  }
+};
+// const events = await firecrawlService.crawlConcertVenue(url, crawlConfig);
 ```
 
 ## Venue-Specific Configuration

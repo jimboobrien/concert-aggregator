@@ -4,6 +4,11 @@ import fs from 'fs/promises';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
 
+// Define a type for generic errors
+type ErrorWithMessage = {
+  message: string;
+};
+
 export class DataPersistenceService {
   private supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,8 +36,9 @@ export class DataPersistenceService {
         
         results.jsonFile = filePath;
         console.log(`Saved ${events.length} events to ${filePath}`);
-      } catch (error: any) {
-        results.errors.push(`JSON save failed: ${error.message}`);
+      } catch (error: unknown) {
+        const typedError = error as ErrorWithMessage;
+        results.errors.push(`JSON save failed: ${typedError.message}`);
       }
     }
 
@@ -53,8 +59,9 @@ export class DataPersistenceService {
         if (error) throw error;
         results.database = true;
         console.log(`Saved ${events.length} events to Supabase for venue ${options.venueId}`);
-      } catch (error: any) {
-        results.errors.push(`Supabase save failed: ${error.message}`);
+      } catch (error: unknown) {
+        const typedError = error as ErrorWithMessage;
+        results.errors.push(`Supabase save failed: ${typedError.message}`);
       }
     }
 

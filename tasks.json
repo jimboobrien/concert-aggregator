@@ -242,6 +242,188 @@
           ]
         }
       ]
+    },
+    {
+      "id": "phase-7",
+      "title": "Version 5.0 - Vercel Deployment Optimization",
+      "description": "Resolve timeout issues with the import process by implementing a job queue pattern.",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "7.1",
+          "title": "Database Setup for Job Queue",
+          "description": "Create the Supabase infrastructure to support asynchronous job processing.",
+          "status": "pending",
+          "subtasks": [
+            {
+              "id": "7.1.1",
+              "title": "Create Scrape Jobs Table",
+              "description": "Create a `scrape_jobs` table in Supabase with fields for job ID, URL, status, result path, errors, timestamps, and user ID.",
+              "status": "pending"
+            },
+            {
+              "id": "7.1.2",
+              "title": "Set Up Row Level Security",
+              "description": "Configure RLS policies to ensure users can only access their own jobs.",
+              "status": "pending"
+            },
+            {
+              "id": "7.1.3",
+              "title": "Create Database Triggers",
+              "description": "Set up triggers for automatic timestamp updates and potentially for webhook notifications.",
+              "status": "pending"
+            }
+          ]
+        },
+        {
+          "id": "7.2",
+          "title": "Backend Job Management",
+          "description": "Create the API endpoints and logic for job creation and status checking.",
+          "status": "pending",
+          "subtasks": [
+            {
+              "id": "7.2.1",
+              "title": "Create Job Creation Endpoint",
+              "description": "Implement `/api/scrape-jobs` POST endpoint that accepts a URL and creates a job record in the `pending` state.",
+              "status": "pending"
+            },
+            {
+              "id": "7.2.2",
+              "title": "Create Job Status Endpoint",
+              "description": "Implement `/api/scrape-jobs/[id]` GET endpoint to check the current status of a job.",
+              "status": "pending"
+            },
+            {
+              "id": "7.2.3",
+              "title": "Create Background Processing Logic",
+              "description": "Implement logic to find and process pending jobs, either via webhooks or cron jobs.",
+              "status": "pending"
+            }
+          ]
+        },
+        {
+          "id": "7.3",
+          "title": "Processing Implementation",
+          "description": "Implement the actual job processing mechanism.",
+          "status": "pending",
+          "subtasks": [
+            {
+              "id": "7.3.1",
+              "title": "Implement Webhook-Triggered Processing",
+              "description": "Create a webhook endpoint that processes a single job when triggered.",
+              "status": "pending"
+            },
+            {
+              "id": "7.3.2",
+              "title": "Add Vercel Cron Job",
+              "description": "Set up a cron job in vercel.json to periodically check for and process pending jobs.",
+              "status": "pending"
+            },
+            {
+              "id": "7.3.3",
+              "title": "Adapt Scraping Logic",
+              "description": "Modify the existing FirecrawlService to work within the job processing context.",
+              "status": "pending"
+            },
+            {
+              "id": "7.3.4",
+              "title": "Implement Result Storage",
+              "description": "Update the job record with results or error information once processing is complete.",
+              "status": "pending"
+            }
+          ]
+        },
+        {
+          "id": "7.4",
+          "title": "Frontend Integration",
+          "description": "Update the UI to work with the new asynchronous job pattern.",
+          "status": "pending",
+          "subtasks": [
+            {
+              "id": "7.4.1",
+              "title": "Update Import Form",
+              "description": "Modify the existing import form to create a job instead of directly processing the scrape.",
+              "status": "pending"
+            },
+            {
+              "id": "7.4.2",
+              "title": "Implement Status Polling",
+              "description": "Add logic to check job status every few seconds and update the UI accordingly.",
+              "status": "pending"
+            },
+            {
+              "id": "7.4.3",
+              "title": "Create Job List View",
+              "description": "Build a UI to show all jobs for the current user with their statuses.",
+              "status": "pending"
+            },
+            {
+              "id": "7.4.4",
+              "title": "Add Result Display",
+              "description": "Update the UI to show job results once processing is complete.",
+              "status": "pending"
+            }
+          ]
+        },
+        {
+          "id": "7.5",
+          "title": "Error Handling & Resilience",
+          "description": "Add robust error handling and recovery mechanisms.",
+          "status": "pending",
+          "subtasks": [
+            {
+              "id": "7.5.1",
+              "title": "Implement Retry Logic",
+              "description": "Add logic to automatically retry failed jobs with exponential backoff.",
+              "status": "pending"
+            },
+            {
+              "id": "7.5.2",
+              "title": "Add Job Timeout Handling",
+              "description": "Implement logic to handle jobs that get stuck in the 'processing' state.",
+              "status": "pending"
+            },
+            {
+              "id": "7.5.3",
+              "title": "Create Detailed Error Reporting",
+              "description": "Capture and display detailed error information for debugging failed jobs.",
+              "status": "pending"
+            }
+          ]
+        },
+        {
+          "id": "7.6",
+          "title": "Testing & Deployment",
+          "description": "Test the new implementation and deploy to Vercel.",
+          "status": "pending",
+          "subtasks": [
+            {
+              "id": "7.6.1",
+              "title": "Create Test Jobs",
+              "description": "Test the job queue with a variety of URLs and processing times.",
+              "status": "pending"
+            },
+            {
+              "id": "7.6.2",
+              "title": "Verify Vercel Compatibility",
+              "description": "Ensure the solution works within Vercel's serverless constraints.",
+              "status": "pending"
+            },
+            {
+              "id": "7.6.3",
+              "title": "Set Up Production Environment",
+              "description": "Configure environment variables and settings for production.",
+              "status": "pending"
+            },
+            {
+              "id": "7.6.4",
+              "title": "Monitor Initial Deployment",
+              "description": "Track the performance and reliability of the job queue in production.",
+              "status": "pending"
+            }
+          ]
+        }
+      ]
     }
   ]
 } 

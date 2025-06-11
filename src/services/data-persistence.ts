@@ -49,23 +49,28 @@ export class DataPersistenceService {
    */
   async save(data: ScrapedData, options: StorageOptions, venueId?: string): Promise<string> {
     let savePath = 'No file saved.';
+    const saveErrors = [];
+    let savedSomewhere = false;
 
+    // Always try to save to JSON if requested
     if (options.saveToJson) {
-      await this.ensureDirectoryExists();
-      const filename = this.generateFilename(data.url);
-      const filePath = path.join(this.dataDir, filename);
-
       try {
+        await this.ensureDirectoryExists();
+        const filename = this.generateFilename(data.url);
+        const filePath = path.join(this.dataDir, filename);
+
         // We're using the already formatted data directly
         await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
         savePath = filePath;
+        savedSomewhere = true;
         console.log(`Successfully saved data to ${filePath}`);
       } catch (error) {
-        console.error(`Error saving data to ${filePath}:`, error);
-        throw new Error('Could not save scraped data to JSON.');
+        console.error(`Error saving data to ${this.dataDir}:`, error);
+        saveErrors.push(`JSON save error: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
+    // Try to save to Supabase if requested, but don't fail the entire operation
     if (options.saveToSupabase && data.json?.events && venueId) {
       try {
         // Use the prepareForSupabase utility to format data for Supabase
@@ -76,13 +81,21 @@ export class DataPersistenceService {
           .upsert(eventsToSave);
 
         if (error) {
-          throw error;
+          console.error('Error saving data to Supabase:', error);
+          saveErrors.push(`Supabase error: ${error.message}`);
+        } else {
+          console.log('Successfully saved events to Supabase.');
+          savedSomewhere = true;
         }
-        console.log('Successfully saved events to Supabase.');
       } catch (error) {
         console.error('Error saving data to Supabase:', error);
-        throw new Error('Could not save scraped data to Supabase.');
+        saveErrors.push(`Supabase error: ${error instanceof Error ? error.message : String(error)}`);
       }
+    }
+
+    // Only throw if we couldn't save anywhere
+    if (!savedSomewhere && saveErrors.length > 0) {
+      throw new Error(`Could not save data: ${saveErrors.join(', ')}`);
     }
 
     return savePath;
@@ -229,10 +242,8 @@ export class DataPersistenceService {
               // Safely handle string properties
               title: event.title,
               url: event.url,
-              description: event.description,
-              // Add import metadata
-              imported_at: new Date().toISOString(),
-              source_url: url
+              description: event.description
+              // Remove metadata fields that don't exist in schema
             };
           })
         : eventsToSave;

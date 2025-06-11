@@ -35,7 +35,51 @@ export async function getScrapeData(
     // Scrape the data using FirecrawlService
     let events;
     try {
-      events = await firecrawlService.crawlConcertVenue(url, config);
+      // Add retry logic for reliability
+      const maxRetries = 2;
+      let retryCount = 0;
+      let lastError: unknown;
+      
+      while (retryCount <= maxRetries) {
+        try {
+          console.log(`Scrape attempt ${retryCount + 1} of ${maxRetries + 1} for ${url}`);
+          events = await firecrawlService.crawlConcertVenue(url, config);
+          
+          // Break the loop if successful
+          if (events && events.length > 0) {
+            break;
+          }
+          
+          console.log('No events found, retrying...');
+          retryCount++;
+        } catch (retryError) {
+          lastError = retryError;
+          console.log(`Attempt ${retryCount + 1} failed:`, retryError);
+          
+          // Only retry if it's a timeout or server error
+          if (retryError instanceof Error && 
+              (retryError.message.includes('timeout') || 
+               retryError.message.includes('500') ||
+               retryError.message.includes('503'))) {
+            retryCount++;
+            
+            if (retryCount <= maxRetries) {
+              // Wait a bit longer between retries
+              const delay = retryCount * 2000; // 2 seconds, 4 seconds
+              console.log(`Waiting ${delay}ms before retry...`);
+              await new Promise(resolve => setTimeout(resolve, delay));
+            }
+          } else {
+            // Don't retry for other types of errors
+            throw retryError;
+          }
+        }
+      }
+      
+      // If we've exhausted all retries and still have no events, throw the last error
+      if ((!events || events.length === 0) && lastError) {
+        throw lastError;
+      }
       
       // Validate we actually have events to save
       if (!events || events.length === 0) {
@@ -59,8 +103,12 @@ export async function getScrapeData(
         errorMessage += ' This site is known to have complex structure that can be difficult to scrape.';
       }
       
-      if (scrapeError instanceof Error && scrapeError.message.includes('timeout')) {
-        errorMessage += ' The page took too long to respond. You might try again later when the site is less busy.';
+      if (scrapeError instanceof Error) {
+        if (scrapeError.message.includes('timeout')) {
+          errorMessage += ' The page took too long to respond. You might try again later when the site is less busy.';
+        } else if (scrapeError.message.includes('500')) {
+          errorMessage += ' The service is currently experiencing high load. Please try again in a few minutes.';
+        }
       }
       
       return { error: errorMessage };
@@ -72,7 +120,39 @@ export async function getScrapeData(
     try {
       // Only attempt to save if we have events
       if (events && events.length > 0) {
-        await persistenceService.saveScrapedEvents(url, events, storageOptions, venueId, venueName);
+        // Try Supabase first, but if it fails (artist_id issues), fall back to JSON-only
+        try {
+          if (storageOptions.saveToSupabase && venueId) {
+            await persistenceService.saveScrapedEvents(url, events, storageOptions, venueId, venueName);
+          } else {
+            // Just save to JSON file
+            const jsonOnlyOptions = { ...storageOptions, saveToSupabase: false };
+            await persistenceService.saveScrapedEvents(url, events, jsonOnlyOptions, venueId, venueName);
+          }
+        } catch (supabaseError) {
+          console.error('Error saving to Supabase, falling back to JSON-only:', supabaseError);
+          
+          // Fallback: Save to JSON only
+          const jsonOnlyOptions = { ...storageOptions, saveToSupabase: false };
+          await persistenceService.saveScrapedEvents(url, events, jsonOnlyOptions, venueId, venueName);
+          
+          // Update message to user
+          return {
+            url,
+            timestamp: new Date().toISOString(),
+            json: {
+              events,
+            },
+            markdown: null,
+            metadata: {
+              source: url,
+              venueId,
+              venueName,
+              eventsCount: events.length,
+              warningMessage: 'Could not save to Supabase due to database constraints. Data was saved to JSON file only.'
+            }
+          };
+        }
       } else {
         return { error: 'No events found to save' };
       }

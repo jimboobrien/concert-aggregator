@@ -1,7 +1,8 @@
-import Firecrawl from '@mendable/firecrawl-js';
+import FirecrawlApp from '@mendable/firecrawl-js';
 import { z } from 'zod';
 import { ScrapedData, CrawlConfig, ScrapedEvent, SelectorSchema, ConcertEvent } from '../types';
 
+// Define the Zod schema for validation during extraction
 const EventSchema = z.object({
   title: z.string(),
   date: z.string(),
@@ -12,15 +13,20 @@ const ExtractionSchema = z.object({
   events: z.array(EventSchema),
 });
 
+// Initialize the client once at module level for better performance
+const firecrawlClient = new FirecrawlApp({ 
+  apiKey: process.env.FIRECRAWL_API_KEY || '' 
+});
+
 export class FirecrawlService {
-  private client: Firecrawl;
+  private client: FirecrawlApp;
 
   constructor() {
     if (!process.env.FIRECRAWL_API_KEY) {
       throw new Error('FIRECRAWL_API_KEY is not set');
     }
-    // Initialize client with the API key
-    this.client = new Firecrawl({ apiKey: process.env.FIRECRAWL_API_KEY });
+    // Use the shared client instance
+    this.client = firecrawlClient;
   }
 
   async scrapeUrl(url: string): Promise<ScrapedData> {
@@ -40,7 +46,7 @@ export class FirecrawlService {
       }
       
       const scrapedJson = (result.json as { events: ConcertEvent[] }) || null;
-
+      console.log('Scraped JSON:', scrapedJson);
       return {
         json: scrapedJson,
         markdown: result.markdown ?? null,
@@ -48,7 +54,6 @@ export class FirecrawlService {
         timestamp: new Date().toISOString(),
         metadata: result.metadata ?? {},
       };
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error(`Error scraping ${url}:`, error);
@@ -90,128 +95,73 @@ export class FirecrawlService {
   }
 
   private async scrapeWithAIPrompt(url: string, prompt: string): Promise<ScrapedEvent[]> {
-    const maxRetries = 3;
-    let attempts = 0;
-    
-    // Determine if this is a known problematic site that needs special handling
-    const isProblematicSite = /thecaverns\.com|otherProblemSite\.com/i.test(url);
-    
-    // Set appropriate timeout based on the site
-    const baseTimeout = isProblematicSite ? 120000 : 60000; // 2 minutes for problematic sites, 1 minute for others
-    
-    while (attempts <= maxRetries) {
-      try {
-        console.log(`AI Prompt scrape starting for: ${url}`);
-        console.log(`Using prompt: "${prompt}"`);
-        
-        // Use more robust options for concert scraping
-        const response = await this.client.scrapeUrl(url, {
-          formats: ['markdown', 'json'],
-          waitFor: isProblematicSite ? 10000 : 5000, // Longer wait for problematic sites
-          onlyMainContent: true, // Filter out navigation, etc.
-          jsonOptions: {
-            schema: ExtractionSchema,
-            prompt: prompt,
-          },
-          timeout: baseTimeout * (attempts + 1), // Increase timeout with each retry
-          mobile: isProblematicSite, // Try mobile view for problematic sites
-        });
+    try {
+      console.log(`AI Prompt scrape starting for: ${url}`);
+      console.log(`Using prompt: "${prompt}"`);
+      
+      // Call the API directly to avoid TypeScript issues
+      const response = await this.client.scrapeUrl(url, {
+        formats: ['json'],
+        jsonOptions: {
+          schema: ExtractionSchema,
+          prompt
+        },
+        waitFor: 5000
+      });
+      
+      console.log('Response received:', 
+        response ? `Contains JSON: ${'json' in response}` : 'No response'
+      );
 
-        console.log(`Raw response type: ${typeof response}`);
-        console.log(`Response has error: ${'error' in response}`);
-        console.log(`Response has json: ${'json' in response}`);
+      if (response && 'json' in response) {
+        // Log the raw JSON for debugging
+        console.log('Raw JSON response available');
         
-        // Check if the response indicates an error
-        if ('error' in response) {
-          const errorMessage = typeof response.error === 'string' 
-            ? response.error 
-            : JSON.stringify(response.error || 'Unknown error');
-          throw new Error(`Firecrawl API error: ${errorMessage}`);
-        }
-
-        if (!response || !('json' in response)) {
-          throw new Error('Invalid response format from Firecrawl');
-        }
+        // Parse and validate with Zod
+        const parsed = ExtractionSchema.parse(response.json);
+        console.log(`Successfully extracted ${parsed.events.length} events`);
         
-        if (!response.json?.events || !Array.isArray(response.json.events) || response.json.events.length === 0) {
-          console.warn('No events found in Firecrawl response');
-          return [];
-        }
-        
-        // Extract events and validate with Zod schema
-        const extractedEvents = response.json.events;
-        console.log(`Found ${extractedEvents.length} events in the response`);
-        
-        // Validate the response with Zod schema
-        const validEvents: ScrapedEvent[] = [];
-        
-        for (const event of extractedEvents) {
-          try {
-            const validEvent = EventSchema.parse(event);
-            validEvents.push({
-              ...validEvent,
-              scrapedAt: new Date().toISOString()
-            });
-          } catch (error) {
-            console.warn('Event validation failed:', error);
-          }
-        }
-        
-        console.log(`Validated ${validEvents.length} of ${extractedEvents.length} events`);
-        return validEvents;
-        
-      } catch (error) {
-        attempts++;
-        console.error(`Error during Firecrawl AI scrape (attempt ${attempts}/${maxRetries + 1}):`, error);
-        
-        if (attempts <= maxRetries) {
-          // Add exponential backoff between retries with longer delays for problematic sites
-          const backoffTime = Math.pow(2, attempts) * (isProblematicSite ? 2000 : 1000);
-          console.log(`Retrying in ${backoffTime}ms...`);
-          await new Promise(resolve => setTimeout(resolve, backoffTime));
-        } else {
-          // If all retries failed, throw the error
-          throw error;
-        }
+        // Add the scrapedAt timestamp to each event
+        return parsed.events.map(event => ({
+          ...event,
+          scrapedAt: new Date().toISOString(),
+        }));
+      } else {
+        console.error('Firecrawl scrape failed or returned unexpected data format.');
+        return [];
       }
+    } catch (error) {
+      console.error('Error during Firecrawl AI scrape:', error);
+      throw error;
     }
-    
-    // This shouldn't be reached due to the throw in the catch block,
-    // but TypeScript needs it for type checking
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async scrapeWithSelectors(url: string, schema: SelectorSchema): Promise<ScrapedEvent[]> {
+    // This is a conceptual example of how selector-based extraction could work.
+    // This might eventually use a library like Cheerio or a different Firecrawl feature.
+    console.log('Selector mode is a placeholder for future implementation.');
+    // For now, return an empty array or throw an error.
     return [];
   }
 
-  private async scrapeWithSelectors(url: string, schema: SelectorSchema): Promise<ScrapedEvent[]> {
-    console.log('Selector mode is a placeholder for future implementation.', url, schema);
-    return Promise.resolve([]);
-  }
-
-  // Fallback method for basic scraping when AI prompt scraping fails
   private async fallbackBasicScrape(url: string): Promise<ScrapedEvent[]> {
     try {
       console.log(`Attempting fallback basic scrape for: ${url}`);
+      const result = await this.scrapeUrl(url);
       
-      // Use a much simpler approach - just get the raw HTML content
-      const response = await this.client.scrapeUrl(url, {
-        formats: ['rawHtml'],
-        waitFor: 3000,
-        timeout: 30000,
-      });
-      
-      if ('error' in response || !response.rawHtml) {
-        console.error('Fallback scrape also failed');
+      if (!result.json?.events) {
+        console.warn('No events found in fallback scrape');
         return [];
       }
       
-      console.log('Successfully fetched raw HTML in fallback mode');
-      
-      // For now, just return an empty array
-      // In a future implementation, we could add basic HTML parsing here
-      // to extract events from the raw HTML using common patterns
-      return [];
+      return result.json.events.map(event => ({
+        ...event,
+        scrapedAt: new Date().toISOString(),
+      }));
     } catch (error) {
-      console.error('Fallback scraping failed:', error);
+      console.error('Fallback scrape failed:', error);
       return [];
     }
   }
-} 
+}

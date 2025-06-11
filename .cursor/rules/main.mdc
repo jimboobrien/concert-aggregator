@@ -22,6 +22,6 @@ Globs: *
 - never ask me to run npm run dev always assume im already doing it manually.
 - never run npm run dev in ther terminal.
 - always refer to the /docs folder when building new features and check for if there are any requirements or rules set up for this feature.
-- refer to the SQL documents in /supabase/migtrations folder for tables and functions.
+- refer to the SQL documents in /src/utils/supabase/migrations folder for tables and functions.
 - when I ask you to do something I need you to break down the task into paarts and only do one or two chnages at a time.
 - anytime I use stripe in a file you need to grab it from the utilies folder.

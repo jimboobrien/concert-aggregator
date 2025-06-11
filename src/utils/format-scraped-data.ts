@@ -44,9 +44,8 @@ export function formatScrapedData(
  * - event_date: ISO formatted date
  * - url: URL to the event/ticket page
  * - venue_id: Foreign key to venues table
- * - artist_id: Foreign key to artists table (null until artist matching is implemented)
+ * - artist_id: Foreign key to artists table (currently using a default UUID)
  * - description: Event description (null for now)
- * - scraped_at: Timestamp of when the data was scraped
  */
 export function prepareForSupabase(
   data: ScrapedData,
@@ -56,21 +55,24 @@ export function prepareForSupabase(
   event_date: string;
   url: string | null;
   venue_id: string | undefined;
-  artist_id: null;
+  artist_id: string;
   description: null;
-  scraped_at: string;
 }> {
   if (!data.json?.events) {
     return [];
   }
+
+  // This UUID format is expected by PostgreSQL for INSERT operations
+  // We're using a "known" UUID (v4 format) which we'll need to create if it doesn't exist
+  // The corresponding artist should be created before importing events
+  const defaultArtistId = 'c0a80121-7ac6-4745-b000-f95544c77ed2'; // "Unknown Artist" ID
 
   return data.json.events.map((event) => ({
     title: event.title,
     event_date: new Date(event.date).toISOString(),
     url: event.url || null,
     venue_id: venueId,
-    artist_id: null, // Nullable field until artist matching is implemented
+    artist_id: defaultArtistId, // Using a known artist ID until the migration to make this nullable is applied
     description: null,
-    scraped_at: data.timestamp,
   }));
 } 

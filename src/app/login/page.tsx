@@ -1,14 +1,23 @@
 import { login, signup } from './actions'
 import Link from 'next/link'
 
-export default async function LoginPage({ searchParams }: { searchParams: { message: string } }) {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: { message?: string; signup?: string }
+}) {
+  const message = searchParams?.message
+  const isSignup = searchParams?.signup === 'true'
+
   return (
     <div className="container">
       <div className="row justify-content-center">
         <div className="col-md-6">
           <div className="card mt-5">
             <div className="card-body">
-              <h1 className="card-title text-center mb-4">Welcome Back</h1>
+              <h1 className="card-title text-center mb-4">
+                {isSignup ? 'Create Account' : 'Welcome Back'}
+              </h1>
               <form>
                 <div className="mb-3">
                   <label htmlFor="email">Email</label>
@@ -33,16 +42,27 @@ export default async function LoginPage({ searchParams }: { searchParams: { mess
                   />
                 </div>
                 <div className="d-grid gap-2">
-                  <button formAction={login} className="btn btn-primary">Sign In</button>
-                  <button formAction={signup} className="btn btn-outline-primary">Sign Up</button>
-                </div>
-                <div className="text-center mt-3">
-                  <Link href="/forgot-password">Forgot password?</Link>
+                  {isSignup ? (
+                    <>
+                      <button formAction={signup} className="btn btn-primary">Sign Up</button>
+                      <Link href="/login" className="btn btn-outline-secondary">
+                        Already have an account? Sign In
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <button formAction={login} className="btn btn-primary">Sign In</button>
+                      <button formAction={signup} className="btn btn-outline-primary">Sign Up</button>
+                      <div className="text-center mt-3">
+                        <Link href="/forgot-password">Forgot password?</Link>
+                      </div>
+                    </>
+                  )}
                 </div>
               </form>
-              {searchParams?.message && (
+              {message && (
                 <p className="mt-4 p-4 bg-light text-center rounded">
-                  {searchParams.message}
+                  {message}
                 </p>
               )}
             </div>

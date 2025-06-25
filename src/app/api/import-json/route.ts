@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DataPersistenceService } from '@/services/data-persistence';
+import { createAdminClient } from '@/utils/supabase/admin-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,6 +31,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid JSON file' }, { status: 400 });
     }
 
+    // Get venue name for better filename generation
+    const supabase = createAdminClient();
+    const { data: venueData } = await supabase
+      .from('venues')
+      .select('name')
+      .eq('id', venueId)
+      .single();
+    
+    const venueName = venueData?.name;
+
     // Initialize the data persistence service
     const dataPersistenceService = new DataPersistenceService();
 
@@ -39,6 +50,16 @@ export async function POST(request: NextRequest) {
       venueId,
       true // normalize data
     );
+
+    // Also save to file with the new filename format
+    if (jsonData.url) {
+      await dataPersistenceService.saveRawJsonToFile(
+        jsonData.url,
+        jsonData,
+        undefined, // Let the system generate the filename
+        venueName
+      );
+    }
 
     return NextResponse.json({
       success: true,

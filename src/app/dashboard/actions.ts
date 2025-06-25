@@ -15,6 +15,26 @@ export async function getScrapeData(
   try {
     const firecrawlService = new FirecrawlService();
     
+    // If we have venueId but no venueName, try to get it from the database
+    if (venueId && !venueName) {
+      try {
+        const supabase = createAdminClient();
+        const { data } = await supabase
+          .from('venues')
+          .select('name')
+          .eq('id', venueId)
+          .single();
+        
+        if (data) {
+          venueName = data.name;
+          console.log(`Found venue name: ${venueName} for ID: ${venueId}`);
+        }
+      } catch (error) {
+        console.warn('Could not fetch venue name:', error);
+        // Continue without venue name
+      }
+    }
+    
     // Check if this is a known problematic URL
     const isProblematicSite = /thecaverns\.com|otherProblemSite\.com/i.test(url);
     

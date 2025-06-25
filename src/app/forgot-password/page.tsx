@@ -1,7 +1,13 @@
 import { requestPasswordReset } from './actions'
 import Link from 'next/link'
 
-export default async function ForgotPasswordPage({ searchParams }: { searchParams: { message: string } }) {
+export default async function ForgotPasswordPage({
+  searchParams,
+}: {
+  searchParams: { message: string | undefined }
+}) {
+  const message = searchParams?.message
+
   return (
     <div className="container">
       <div className="row justify-content-center">
@@ -21,9 +27,9 @@ export default async function ForgotPasswordPage({ searchParams }: { searchParam
                   <button formAction={requestPasswordReset} className="btn btn-primary">Send Reset Link</button>
                 </div>
               </form>
-              {searchParams?.message && (
+              {message && (
                 <p className="mt-4 p-4 bg-light text-center rounded">
-                  {searchParams.message}
+                  {message}
                 </p>
               )}
                <div className="text-center mt-3">

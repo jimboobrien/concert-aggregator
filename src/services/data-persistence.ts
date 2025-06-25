@@ -37,17 +37,46 @@ export class DataPersistenceService {
 
   /**
    * Generate a consistent filename based on the URL and timestamp
+   * Format: YYYY_MM_DD_hostname_state.json (e.g., 2025_06_25_thecaverns_ga.json)
    */
-  private generateFilename(url: string): string {
+  private generateFilename(url: string, venueName?: string): string {
+    // Extract hostname from URL
     const hostname = new URL(url).hostname;
-    const timestamp = Date.now();
-    return `${hostname}-${timestamp}.json`;
+    // Remove www. and .com/.org/etc from hostname
+    const cleanHostname = hostname.replace(/^www\./, '').replace(/\.(com|org|net|io|gov)$/, '');
+    
+    // Get current date for the filename
+    const date = new Date();
+    const year = date.getFullYear();
+    // Add leading zero if month/day is single digit
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    // Default state code - could be enhanced to determine from URL or venue data
+    let stateCode = 'ga';
+    
+    // If we have venue information, try to extract state from it
+    if (venueName) {
+      const lowerVenueName = venueName.toLowerCase();
+      
+      // Check for state names or abbreviations in venue name
+      if (lowerVenueName.includes('georgia') || lowerVenueName.includes(' ga ') || lowerVenueName.endsWith(' ga')) {
+        stateCode = 'ga';
+      } else if (lowerVenueName.includes('tennessee') || lowerVenueName.includes(' tn ') || lowerVenueName.endsWith(' tn')) {
+        stateCode = 'tn';
+      } else if (lowerVenueName.includes('north carolina') || lowerVenueName.includes(' nc ') || lowerVenueName.endsWith(' nc')) {
+        stateCode = 'nc';
+      }
+      // Add more state checks as needed
+    }
+    
+    return `${year}_${month}_${day}_${cleanHostname}_${stateCode}.json`;
   }
 
   /**
    * Save ScrapedData directly to file and/or Supabase
    */
-  async save(data: ScrapedData, options: StorageOptions, venueId?: string): Promise<string> {
+  async save(data: ScrapedData, options: StorageOptions, venueId?: string, venueName?: string): Promise<string> {
     let savePath = 'No file saved.';
     const saveErrors = [];
     let savedSomewhere = false;
@@ -56,7 +85,7 @@ export class DataPersistenceService {
     if (options.saveToJson) {
       try {
         await this.ensureDirectoryExists();
-        const filename = this.generateFilename(data.url);
+        const filename = this.generateFilename(data.url, venueName);
         const filePath = path.join(this.dataDir, filename);
 
         // We're using the already formatted data directly
@@ -127,7 +156,7 @@ export class DataPersistenceService {
     }
     
     // Use the existing save method with the formatted data
-    return this.save(formattedData, options, venueId);
+    return this.save(formattedData, options, venueId, venueName);
   }
   
   /**
@@ -136,12 +165,13 @@ export class DataPersistenceService {
   async saveRawJsonToFile(
     url: string, 
     jsonData: RawJsonData,
-    customFilename?: string
+    customFilename?: string,
+    venueName?: string
   ): Promise<string> {
     await this.ensureDirectoryExists();
     
     // Use custom filename if provided, otherwise generate one
-    const filename = customFilename || this.generateFilename(url);
+    const filename = customFilename || this.generateFilename(url, venueName);
     const filePath = path.join(this.dataDir, filename);
     
     try {

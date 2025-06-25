@@ -8,12 +8,14 @@ import { ConcertEvent } from '@/types';
  * @param filePath Path to the JSON file to import
  * @param sourceUrl The original URL the data was scraped from
  * @param customFilename Optional custom filename for the saved file
+ * @param venueName Optional venue name for better filename generation
  * @returns Path to the saved standardized file
  */
 export async function importJsonFile(
   filePath: string,
   sourceUrl: string,
-  customFilename?: string
+  customFilename?: string,
+  venueName?: string
 ): Promise<string> {
   try {
     // Read the source file
@@ -22,7 +24,7 @@ export async function importJsonFile(
     
     // Use our data persistence service to save in standardized format
     const persistenceService = new DataPersistenceService();
-    return await persistenceService.saveRawJsonToFile(sourceUrl, jsonData, customFilename);
+    return await persistenceService.saveRawJsonToFile(sourceUrl, jsonData, customFilename, venueName);
   } catch (error) {
     console.error(`Error importing JSON file from ${filePath}:`, error);
     throw new Error(`Failed to import JSON file: ${error instanceof Error ? error.message : String(error)}`);
@@ -35,12 +37,14 @@ export async function importJsonFile(
  * @param jsonUrl URL of the JSON data to import
  * @param sourceUrl The original URL the data was scraped from (defaults to jsonUrl)
  * @param customFilename Optional custom filename for the saved file
+ * @param venueName Optional venue name for better filename generation
  * @returns Path to the saved standardized file
  */
 export async function importJsonFromUrl(
   jsonUrl: string,
   sourceUrl?: string,
-  customFilename?: string
+  customFilename?: string,
+  venueName?: string
 ): Promise<string> {
   try {
     // Fetch the JSON data from URL
@@ -57,7 +61,8 @@ export async function importJsonFromUrl(
     return await persistenceService.saveRawJsonToFile(
       sourceUrl || jsonUrl, 
       jsonData, 
-      customFilename
+      customFilename,
+      venueName
     );
   } catch (error) {
     console.error(`Error importing JSON from URL ${jsonUrl}:`, error);

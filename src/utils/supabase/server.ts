@@ -8,7 +8,7 @@ interface Cookie {
 }
 
 // Keep track of refresh attempts to prevent multiple simultaneous refreshes
-const refreshInProgress = new Map<string, Promise<void>>();
+//const refreshInProgress = new Map<string, Promise<void>>();
 
 export const createClient = async () => {
   const cookieStore = await cookies();
@@ -28,6 +28,7 @@ export const createClient = async () => {
             // The `setAll` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.
+            console.error(error);
           }
         },
       },

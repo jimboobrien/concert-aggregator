@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Table, Button, Form, InputGroup, Modal, Alert, Spinner } from 'react-bootstrap';
 import { createClient } from '@/utils/supabase/client';
 
@@ -29,13 +29,8 @@ export default function ArtistManagementContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize] = useState(20);
   
-  // Load artists on component mount
-  useEffect(() => {
-    loadArtists();
-  }, [currentPage, sortField, sortDirection]);
-
   // Load artists from the database
-  const loadArtists = async () => {
+  const loadArtists = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -73,7 +68,12 @@ export default function ArtistManagementContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, pageSize, searchTerm, sortDirection, sortField]);
+  
+  // Load artists on component mount
+  useEffect(() => {
+    loadArtists();
+  }, [loadArtists]);
 
   // Handle search
   const handleSearch = () => {
@@ -94,51 +94,50 @@ export default function ArtistManagementContent() {
   };
 
   // Handle artist deletion
-    // Handle artist deletion
-    const handleDeleteArtist = async () => {
-        if (!artistToDelete) return;
+  const handleDeleteArtist = async () => {
+      if (!artistToDelete) return;
+      
+      setIsDeleting(true);
+      setDeleteError(null);
+      
+      try {
+        const supabase = createClient();
+        // Call the RPC function to delete the artist and get follower IDs
+        const { data: formerFollowers, error } = await supabase.rpc(
+          'delete_artist_and_related_data',
+          { artist_id_to_delete: artistToDelete.id }
+        );
         
-        setIsDeleting(true);
-        setDeleteError(null);
-        
-        try {
-          const supabase = createClient();
-          // Call the RPC function to delete the artist and get follower IDs
-          const { data: formerFollowers, error } = await supabase.rpc(
-            'delete_artist_and_related_data',
-            { artist_id_to_delete: artistToDelete.id }
-          );
-          
-          if (error) {
-            throw error;
-          }
-          
-          // If there were followers, call the API to handle re-following.
-          // We don't need to wait for this to finish, it can run in the background.
-          if (formerFollowers && formerFollowers.length > 0) {
-            fetch('/api/artists/handle-deleted-followers', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                deletedArtistName: artistToDelete.name,
-                followerIds: formerFollowers.map(f => f.user_id),
-              }),
-            });
-          }
-    
-          // Remove the deleted artist from the list
-          setArtists(artists.filter(artist => artist.id !== artistToDelete.id));
-          setShowDeleteModal(false);
-        } catch (err: unknown) {
-          const errorMessage = err instanceof Error ? err.message : 'Failed to delete artist';
-          setDeleteError(errorMessage);
-          console.error('Error deleting artist:', err);
-        } finally {
-          setIsDeleting(false);
+        if (error) {
+          throw error;
         }
-      };
+        
+        // If there were followers, call the API to handle re-following.
+        // We don't need to wait for this to finish, it can run in the background.
+        if (formerFollowers && formerFollowers.length > 0) {
+          fetch('/api/artists/handle-deleted-followers', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              deletedArtistName: artistToDelete.name,
+              followerIds: formerFollowers.map((f: { user_id: string }) => f.user_id),
+            }),
+          });
+        }
+  
+        // Remove the deleted artist from the list
+        setArtists(artists.filter(artist => artist.id !== artistToDelete.id));
+        setShowDeleteModal(false);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to delete artist';
+        setDeleteError(errorMessage);
+        console.error('Error deleting artist:', err);
+      } finally {
+        setIsDeleting(false);
+      }
+    };
 
   // Render sort indicator
   const renderSortIndicator = (field: keyof Artist) => {

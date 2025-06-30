@@ -1,9 +1,11 @@
-import fs from 'fs/promises';
+import * as fs from 'fs';
 import path from 'path';
 import { ScrapedData, StorageOptions, ConcertEvent } from '../types';
 import { createAdminClient } from '@/utils/supabase/admin-client';
 import { formatScrapedData, prepareForSupabase } from '@/utils/format-scraped-data';
 import { ScrapedEvent } from '@/types/scraping';
+import { findOrCreateVenue, recordVenueScrape } from '@/utils/venue-utils';
+import { findOrCreateArtist } from '@/utils/artist-utils';
 
 // Define a type that represents potential JSON data we might receive
 type RawJsonData = {
@@ -28,7 +30,7 @@ export class DataPersistenceService {
 
   private async ensureDirectoryExists(): Promise<void> {
     try {
-      await fs.mkdir(this.dataDir, { recursive: true });
+      await fs.promises.mkdir(this.dataDir, { recursive: true });
     } catch (error) {
       console.error('Error creating data directory:', error);
       throw new Error('Could not create data directory.');
@@ -37,40 +39,107 @@ export class DataPersistenceService {
 
   /**
    * Generate a consistent filename based on the URL and timestamp
-   * Format: YYYY_MM_DD_hostname_state.json (e.g., 2025_06_25_thecaverns_ga.json)
+   * Format: YYYY_MM_DD_HH:MM:SS_hostname_state.json (e.g., 2025_06_25_04:09:51_thecaverns_ga.json)
    */
   private generateFilename(url: string, venueName?: string): string {
+    // State detection map: key is the state abbreviation, values are patterns to check for
+    const statePatterns: Record<string, string[]> = {
+      'al': ['alabama', ' al ', ' al,', ' al.', ' al$'],
+      'ak': ['alaska', ' ak ', ' ak,', ' ak.', ' ak$'],
+      'az': ['arizona', ' az ', ' az,', ' az.', ' az$', 'phoenix', 'tucson', 'scottsdale'],
+      'ar': ['arkansas', ' ar ', ' ar,', ' ar.', ' ar$'],
+      'ca': ['california', ' ca ', ' ca,', ' ca.', ' ca$', 'los angeles', 'san francisco', 'san diego', 'sacramento'],
+      'co': ['colorado', ' co ', ' co,', ' co.', ' co$', 'denver', 'boulder', 'aspen'],
+      'ct': ['connecticut', ' ct ', ' ct,', ' ct.', ' ct$'],
+      'de': ['delaware', ' de ', ' de,', ' de.', ' de$'],
+      'fl': ['florida', ' fl ', ' fl,', ' fl.', ' fl$', 'miami', 'orlando', 'tampa'],
+      'ga': ['georgia', ' ga ', ' ga,', ' ga.', ' ga$', 'atlanta', 'savannah', 'athens'],
+      'hi': ['hawaii', ' hi ', ' hi,', ' hi.', ' hi$'],
+      'id': ['idaho', ' id ', ' id,', ' id.', ' id$'],
+      'il': ['illinois', ' il ', ' il,', ' il.', ' il$', 'chicago'],
+      'in': ['indiana', ' in ', ' in,', ' in.', ' in$', 'indianapolis'],
+      'ia': ['iowa', ' ia ', ' ia,', ' ia.', ' ia$'],
+      'ks': ['kansas', ' ks ', ' ks,', ' ks.', ' ks$'],
+      'ky': ['kentucky', ' ky ', ' ky,', ' ky.', ' ky$', 'louisville', 'lexington'],
+      'la': ['louisiana', ' la ', ' la,', ' la.', ' la$', 'new orleans', 'baton rouge'],
+      'me': ['maine', ' me ', ' me,', ' me.', ' me$'],
+      'md': ['maryland', ' md ', ' md,', ' md.', ' md$', 'baltimore'],
+      'ma': ['massachusetts', ' ma ', ' ma,', ' ma.', ' ma$', 'boston'],
+      'mi': ['michigan', ' mi ', ' mi,', ' mi.', ' mi$', 'detroit', 'ann arbor'],
+      'mn': ['minnesota', ' mn ', ' mn,', ' mn.', ' mn$', 'minneapolis'],
+      'ms': ['mississippi', ' ms ', ' ms,', ' ms.', ' ms$'],
+      'mo': ['missouri', ' mo ', ' mo,', ' mo.', ' mo$', 'st. louis', 'kansas city'],
+      'mt': ['montana', ' mt ', ' mt,', ' mt.', ' mt$'],
+      'ne': ['nebraska', ' ne ', ' ne,', ' ne.', ' ne$'],
+      'nv': ['nevada', ' nv ', ' nv,', ' nv.', ' nv$', 'las vegas', 'reno'],
+      'nh': ['new hampshire', ' nh ', ' nh,', ' nh.', ' nh$'],
+      'nj': ['new jersey', ' nj ', ' nj,', ' nj.', ' nj$'],
+      'nm': ['new mexico', ' nm ', ' nm,', ' nm.', ' nm$', 'santa fe', 'albuquerque'],
+      'ny': ['new york', ' ny ', ' ny,', ' ny.', ' ny$', 'nyc', 'brooklyn', 'manhattan'],
+      'nc': ['north carolina', ' nc ', ' nc,', ' nc.', ' nc$', 'charlotte', 'raleigh', 'asheville'],
+      'nd': ['north dakota', ' nd ', ' nd,', ' nd.', ' nd$'],
+      'oh': ['ohio', ' oh ', ' oh,', ' oh.', ' oh$', 'cleveland', 'columbus', 'cincinnati'],
+      'ok': ['oklahoma', ' ok ', ' ok,', ' ok.', ' ok$'],
+      'or': ['oregon', ' or ', ' or,', ' or.', ' or$', 'portland'],
+      'pa': ['pennsylvania', ' pa ', ' pa,', ' pa.', ' pa$', 'philadelphia', 'pittsburgh'],
+      'ri': ['rhode island', ' ri ', ' ri,', ' ri.', ' ri$', 'providence'],
+      'sc': ['south carolina', ' sc ', ' sc,', ' sc.', ' sc$', 'charleston'],
+      'sd': ['south dakota', ' sd ', ' sd,', ' sd.', ' sd$'],
+      'tn': ['tennessee', ' tn ', ' tn,', ' tn.', ' tn$', 'nashville', 'memphis', 'knoxville'],
+      'tx': ['texas', ' tx ', ' tx,', ' tx.', ' tx$', 'austin', 'dallas', 'houston', 'san antonio'],
+      'ut': ['utah', ' ut ', ' ut,', ' ut.', ' ut$', 'salt lake city'],
+      'vt': ['vermont', ' vt ', ' vt,', ' vt.', ' vt$'],
+      'va': ['virginia', ' va ', ' va,', ' va.', ' va$', 'richmond'],
+      'wa': ['washington', ' wa ', ' wa,', ' wa.', ' wa$', 'seattle', 'tacoma', 'spokane'],
+      'wv': ['west virginia', ' wv ', ' wv,', ' wv.', ' wv$'],
+      'wi': ['wisconsin', ' wi ', ' wi,', ' wi.', ' wi$', 'milwaukee', 'madison'],
+      'wy': ['wyoming', ' wy ', ' wy,', ' wy.', ' wy$']
+    };
+
     // Extract hostname from URL
     const hostname = new URL(url).hostname;
     // Remove www. and .com/.org/etc from hostname
     const cleanHostname = hostname.replace(/^www\./, '').replace(/\.(com|org|net|io|gov)$/, '');
     
-    // Get current date for the filename
+    // Get current date and time for the filename
     const date = new Date();
     const year = date.getFullYear();
     // Add leading zero if month/day is single digit
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     
-    // Default state code - could be enhanced to determine from URL or venue data
+    // Add time components with leading zeros
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    // Default state code
     let stateCode = 'ga';
     
     // If we have venue information, try to extract state from it
     if (venueName) {
       const lowerVenueName = venueName.toLowerCase();
       
-      // Check for state names or abbreviations in venue name
-      if (lowerVenueName.includes('georgia') || lowerVenueName.includes(' ga ') || lowerVenueName.endsWith(' ga')) {
-        stateCode = 'ga';
-      } else if (lowerVenueName.includes('tennessee') || lowerVenueName.includes(' tn ') || lowerVenueName.endsWith(' tn')) {
-        stateCode = 'tn';
-      } else if (lowerVenueName.includes('north carolina') || lowerVenueName.includes(' nc ') || lowerVenueName.endsWith(' nc')) {
-        stateCode = 'nc';
+      // Check each state's patterns
+      for (const [state, patterns] of Object.entries(statePatterns)) {
+        if (patterns.some(pattern => lowerVenueName.includes(pattern))) {
+          stateCode = state;
+          break;
+        }
       }
-      // Add more state checks as needed
     }
     
-    return `${year}_${month}_${day}_${cleanHostname}_${stateCode}.json`;
+    // Also try to detect state from the URL
+    const urlString = url.toLowerCase();
+    for (const [state, patterns] of Object.entries(statePatterns)) {
+      if (patterns.some(pattern => urlString.includes(pattern))) {
+        stateCode = state;
+        break;
+      }
+    }
+    
+    // Format: YYYY_MM_DD_HH:MM:SS_hostname_state.json
+    return `${year}_${month}_${day}_${hours}-${minutes}-${seconds}_${cleanHostname}_${stateCode}.json`;
   }
 
   /**
@@ -89,7 +158,7 @@ export class DataPersistenceService {
         const filePath = path.join(this.dataDir, filename);
 
         // We're using the already formatted data directly
-        await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+        await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
         savePath = filePath;
         savedSomewhere = true;
         console.log(`Successfully saved data to ${filePath}`);
@@ -196,10 +265,10 @@ export class DataPersistenceService {
           markdown: null
         };
         
-        await fs.writeFile(filePath, JSON.stringify(wrappedData, null, 2), 'utf-8');
+        await fs.promises.writeFile(filePath, JSON.stringify(wrappedData, null, 2), 'utf-8');
       } else {
         // Data is already in our format, save it directly
-        await fs.writeFile(filePath, JSON.stringify(jsonData, null, 2), 'utf-8');
+        await fs.promises.writeFile(filePath, JSON.stringify(jsonData, null, 2), 'utf-8');
       }
       
       console.log(`Successfully saved JSON data to ${filePath}`);
@@ -299,5 +368,153 @@ export class DataPersistenceService {
       console.error('Error saving JSON data to Supabase:', error);
       throw new Error('Could not save JSON data to Supabase.');
     }
+  }
+
+  /**
+   * Save scraped data to a JSON file
+   */
+  async saveToJson(data: ScrapedData, options: { fileName: string; outputDir?: string }): Promise<string> {
+    const { fileName, outputDir = 'scraped-data' } = options;
+    
+    // Ensure the output directory exists
+    const fullOutputDir = path.join(process.cwd(), outputDir);
+    if (!fs.existsSync(fullOutputDir)) {
+      fs.mkdirSync(fullOutputDir, { recursive: true });
+    }
+    
+    // Create the full file path
+    const filePath = path.join(fullOutputDir, `${fileName}.json`);
+    
+    // Write the data to the file
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    
+    return filePath;
+  }
+  
+  /**
+   * Save scraped data to Supabase
+   */
+  async saveToSupabase(data: ScrapedData, options: { venueId?: string }): Promise<{ venueId: string; eventsCount: number }> {
+    const supabase = createAdminClient();
+    const { venueId: existingVenueId } = options;
+    
+    let venueId = existingVenueId;
+    let venueName: string | undefined;
+    
+    // If no venue ID was provided, try to extract it from the URL
+    if (!venueId) {
+      try {
+        // Use the findOrCreateVenue utility to get or create a venue
+        const venueResult = await findOrCreateVenue(data.url);
+        venueId = venueResult.id;
+        venueName = venueResult.name;
+        
+        console.log(`${venueResult.isNew ? 'Created new' : 'Found existing'} venue: ${venueResult.name} (${venueId})`);
+      } catch (error) {
+        console.error('Error finding/creating venue:', error);
+        throw new Error('Failed to find or create venue');
+      }
+    }
+    
+    if (!venueId) {
+      throw new Error('Venue ID is required to save events to Supabase');
+    }
+    
+    // Get all events from the scraped data
+    const events = data.json?.events || [];
+    if (events.length === 0) {
+      console.log('No events found in scraped data');
+      return { venueId, eventsCount: 0 };
+    }
+    
+    // Get venue name for artist name cleaning
+    if (!venueName) {
+      const { data: venueData } = await supabase
+        .from('venues')
+        .select('name')
+        .eq('id', venueId)
+        .single();
+      
+      venueName = venueData?.name;
+    }
+    
+    // Process each event
+    let eventsCount = 0;
+    for (const event of events) {
+      try {
+        // Clean and find/create the artist
+        const artistResult = await findOrCreateArtist(event.title, venueName ? [venueName] : []);
+        
+        // Format the date
+        let eventDate: string;
+        try {
+          const date = new Date(event.date);
+          eventDate = date.toISOString();
+        } catch (error) {
+          console.error('Invalid date format:', event.date, error);
+          eventDate = new Date().toISOString(); // Fallback to current date
+        }
+        
+        // Insert the event
+        const { error } = await supabase
+          .from('events')
+          .insert({
+            title: event.title,
+            date: eventDate,
+            venue_id: venueId,
+            artist_id: artistResult.id,
+            ticket_url: event.url,
+            scraped_at: new Date().toISOString()
+          });
+        
+        if (error) {
+          console.error('Error inserting event:', error);
+        } else {
+          eventsCount++;
+        }
+      } catch (eventError) {
+        console.error('Error processing event:', eventError);
+      }
+    }
+    
+    // Record the scrape in the venue_scrape_history table
+    await recordVenueScrape(venueId, data.url, eventsCount);
+    
+    return { venueId, eventsCount };
+  }
+  
+  /**
+   * Save scraped data according to the provided options
+   */
+  async saveData(data: ScrapedData, options: StorageOptions & { fileName: string; outputDir?: string; venueId?: string }): Promise<{
+    filePath?: string;
+    venueId?: string;
+    eventsCount?: number;
+  }> {
+    const result: {
+      filePath?: string;
+      venueId?: string;
+      eventsCount?: number;
+    } = {};
+    
+    // Save to JSON file if requested
+    if (options.saveToJson) {
+      result.filePath = await this.saveToJson(data, {
+        fileName: options.fileName,
+        outputDir: options.outputDir
+      });
+    }
+    
+    // Save to Supabase if requested
+    if (options.saveToSupabase) {
+      const supabaseResult = await this.saveToSupabase(data, {
+        venueId: options.venueId
+      });
+      
+      result.venueId = supabaseResult.venueId;
+      result.eventsCount = supabaseResult.eventsCount;
+    }
+    
+    return result;
   }
 } 

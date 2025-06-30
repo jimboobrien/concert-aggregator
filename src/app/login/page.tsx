@@ -1,12 +1,11 @@
 import { login, signup } from './actions'
 import Link from 'next/link'
 
-export default async function LoginPage({
+export default function LoginPage({
   searchParams,
 }: {
   searchParams: { message?: string; signup?: string }
 }) {
-  const message = searchParams?.message
   const isSignup = searchParams?.signup === 'true'
 
   return (
@@ -60,9 +59,9 @@ export default async function LoginPage({
                   )}
                 </div>
               </form>
-              {message && (
+              {searchParams.message && (
                 <p className="mt-4 p-4 bg-light text-center rounded">
-                  {message}
+                  {searchParams.message}
                 </p>
               )}
             </div>

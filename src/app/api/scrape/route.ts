@@ -4,6 +4,7 @@ import { DataPersistenceService } from '@/services/data-persistence';
 import { CrawlConfig as ApiCrawlConfig, StorageOptions } from '@/types/scraping';
 import { CrawlConfig as ServiceCrawlConfig, SelectorSchema as ServiceSelectorSchema } from '@/types';
 import { formatScrapedData } from '@/utils/format-scraped-data';
+import { findOrCreateVenue } from '@/utils/venue-utils';
 
 // Adapter function to convert API CrawlConfig to service CrawlConfig
 function adaptCrawlConfig(apiConfig: ApiCrawlConfig): ServiceCrawlConfig {
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
     }: {
       url: string;
       crawlConfig: ApiCrawlConfig;
-      storageOptions: StorageOptions;
+      storageOptions: StorageOptions & { detectVenue?: boolean };
     } = body;
 
     if (!url || !crawlConfig || !storageOptions) {
@@ -61,18 +62,31 @@ export async function POST(request: NextRequest) {
     const scraper = new FirecrawlService();
     const storage = new DataPersistenceService();
 
-    // 1. Perform scraping with adapted config
+    // 1. Get or create venue with location information
+    let venueId = storageOptions.venueId;
+    let venueName;
+    let venueCity;
+    let venueState;
+
+    if (storageOptions.detectVenue || !venueId) {
+      try {
+        console.log('Finding or creating venue from URL:', url);
+        const venueResult = await findOrCreateVenue(url);
+        venueId = venueResult.id;
+        venueName = venueResult.name;
+        venueCity = venueResult.city;
+        venueState = venueResult.state;
+        console.log(`Venue detected: ${venueName} (${venueCity}, ${venueState})`);
+      } catch (venueError) {
+        console.error('Error finding/creating venue:', venueError);
+        // Continue with scraping even if venue detection fails
+      }
+    }
+
+    // 2. Perform scraping with adapted config
     const adaptedConfig = adaptCrawlConfig(crawlConfig);
     const events = await scraper.crawlConcertVenue(url, adaptedConfig);
     console.log(`Successfully scraped ${events.length} events from ${url}`);
-
-    // Get venue name from venue ID if available
-    let venueName;
-    if (storageOptions.venueId) {
-      // This would ideally fetch the venue name from the database
-      // For now, we'll use the hostname as a fallback
-      venueName = storageOptions.venueId;
-    }
 
     // Format the data consistently using our utility
     const formattedData = formatScrapedData(url, events, venueName);
@@ -88,7 +102,7 @@ export async function POST(request: NextRequest) {
       url,
       events,
       adaptedOptions,
-      storageOptions.venueId,
+      venueId,
       venueName
     );
 
@@ -96,6 +110,12 @@ export async function POST(request: NextRequest) {
       success: true,
       url,
       count: events.length,
+      venue: {
+        id: venueId,
+        name: venueName,
+        city: venueCity,
+        state: venueState
+      },
       saved: {
         jsonFile: filePath !== 'No file saved.' ? filePath : null,
         database: !!storageOptions.saveToSupabase

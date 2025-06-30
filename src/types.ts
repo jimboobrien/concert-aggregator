@@ -12,6 +12,8 @@ export interface ScrapedData {
 export interface StorageOptions {
   saveToJson: boolean;
   saveToSupabase: boolean;
+  detectVenue?: boolean;
+  useCache?: boolean;
 }
 
 export interface ConcertEvent {

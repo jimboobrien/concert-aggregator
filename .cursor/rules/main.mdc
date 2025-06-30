@@ -20,7 +20,7 @@ Globs: *
 - Never do more than one phase at a time when implementing features as we will do testing after.
 - Keep track of the status of the tasks either pending, in-progress, or complete for each task in task.json.
 - never ask me to run npm run dev always assume im already doing it manually.
-- never run npm run dev in ther terminal.
+- never run 'npm run dev' in the terminal.
 - always refer to the /docs folder when building new features and check for if there are any requirements or rules set up for this feature.
 - refer to the SQL documents in /src/utils/supabase/migrations folder for tables and functions.
 - when I ask you to do something I need you to break down the task into paarts and only do one or two chnages at a time.

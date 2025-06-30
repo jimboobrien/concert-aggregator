@@ -30,4 +30,5 @@ export interface StorageOptions {
   fileName: string; // Used for JSON file output
   outputDir?: string;
   venueId?: string; // Used for Supabase foreign key
+  detectVenue?: boolean; // Whether to automatically detect venue info
 } 

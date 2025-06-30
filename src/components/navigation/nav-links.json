@@ -30,5 +30,13 @@
     "label": "Artists",
     "href": "/artists",
     "icon": "bi-mic"
+  },
+  {
+    "id": "artist-management",
+    "label": "Artist Management",
+    "href": "/admin/artist-management",
+    "icon": "bi-people-fill",
+    "auth": true,
+    "adminOnly": true
   }
 ] 

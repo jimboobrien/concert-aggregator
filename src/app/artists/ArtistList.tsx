@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Artist } from '@/types'
+import { Artist } from '@/types/index'
+import { trackArtistView } from '@/utils/artist-metrics'
 
 interface ArtistListProps {
   artists: Artist[]
@@ -44,6 +45,18 @@ export default function ArtistList({
       setFollowed(new Set(followed))
     }
   }
+  
+  // Function to handle viewing an artist's details
+  const handleViewArtist = async (artistId: string) => {
+    // Track the view metric
+    await trackArtistView(artistId, 'artist_list');
+    
+    // In the future, this would navigate to the artist's page
+    // router.push(`/artists/${artistId}`);
+    
+    // For now, just log that we would navigate
+    console.log(`Would navigate to artist page for: ${artistId}`);
+  }
 
   return (
     <ul className="list-group">
@@ -52,7 +65,13 @@ export default function ArtistList({
           key={artist.id}
           className="list-group-item d-flex justify-content-between align-items-center"
         >
-          {artist.name}
+          <div 
+            className="artist-name cursor-pointer" 
+            onClick={() => handleViewArtist(artist.id)}
+            style={{ cursor: 'pointer' }}
+          >
+            {artist.name}
+          </div>
           <button
             className={`btn ${
               followed.has(artist.id) ? 'btn-secondary' : 'btn-primary'

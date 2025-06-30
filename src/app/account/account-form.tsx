@@ -6,15 +6,14 @@ import { type User } from '@supabase/supabase-js'
 
 export default function AccountForm({ user }: { user: User }) {
   const supabase = createClient()
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [fullname, setFullname] = useState<string | null>(null)
   const [username, setUsername] = useState<string | null>(null)
   const [hometown, setHometown] = useState<string | null>(null)
 
   const getProfile = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true)
-
       const { data, error, status } = await supabase
         .from('profiles')
         .select(`full_name, username, hometown`)
@@ -22,36 +21,31 @@ export default function AccountForm({ user }: { user: User }) {
         .single()
 
       if (error && status !== 406) {
-        throw error
+        console.error('Error loading user data:', error);
+        alert('Error loading user data!');
+        return;
       }
 
       if (data) {
-        setFullname(data.full_name)
-        setUsername(data.username)
-        setHometown(data.hometown)
+        setFullname(data.full_name);
+        setUsername(data.username);
+        setHometown(data.hometown);
       }
-    } catch {
-      alert('Error loading user data!')
+    } catch (error) {
+      console.error('An unexpected error occurred:', error);
+      alert('An unexpected error occurred while loading user data.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }, [user, supabase])
 
   useEffect(() => {
     getProfile()
-  }, [user, getProfile])
+  }, [getProfile])
 
-  async function updateProfile({
-    username,
-    hometown,
-  }: {
-    username: string | null
-    fullname: string | null
-    hometown: string | null
-  }) {
+  async function updateProfile() {
+    setLoading(true);
     try {
-      setLoading(true)
-
       const { error } = await supabase.from('profiles').upsert({
         id: user.id,
         full_name: fullname,
@@ -60,12 +54,17 @@ export default function AccountForm({ user }: { user: User }) {
         updated_at: new Date().toISOString(),
       })
 
-      if (error) throw error
-      alert('Profile updated!')
-    } catch {
-      alert('Error updating the data!')
+      if (error) {
+        console.error('Error updating profile:', error);
+        alert('Error updating the data!');
+        return;
+      }
+      alert('Profile updated!');
+    } catch (error) {
+      console.error('An unexpected error occurred:', error);
+      alert('An unexpected error occurred while updating the profile.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -84,6 +83,7 @@ export default function AccountForm({ user }: { user: User }) {
             value={fullname || ''}
             onChange={(e) => setFullname(e.target.value)}
             className="form-control"
+            disabled={loading}
           />
         </div>
         <div className="form-group mt-3">
@@ -94,6 +94,7 @@ export default function AccountForm({ user }: { user: User }) {
             value={username || ''}
             onChange={(e) => setUsername(e.target.value)}
             className="form-control"
+            disabled={loading}
           />
         </div>
         <div className="form-group mt-3">
@@ -105,27 +106,25 @@ export default function AccountForm({ user }: { user: User }) {
             onChange={(e) => setHometown(e.target.value)}
             className="form-control"
             placeholder="e.g., Nashville, TN"
+            disabled={loading}
           />
         </div>
 
-        <div className="mt-4">
+        <div className="mt-4 d-flex justify-content-between">
           <button
             className="btn btn-primary"
-            onClick={() => updateProfile({ fullname, username, hometown })}
+            onClick={() => updateProfile()}
             disabled={loading}
           >
-            {loading ? 'Loading ...' : 'Update'}
+            {loading ? 'Saving...' : 'Update Profile'}
           </button>
-        </div>
-
-        <div className="mt-2">
           <form action="/auth/signout" method="post">
-            <button className="btn btn-secondary" type="submit">
-              Sign out
+            <button className="btn btn-secondary" type="submit" disabled={loading}>
+              Sign Out
             </button>
           </form>
         </div>
       </div>
     </div>
   )
-} 
+}

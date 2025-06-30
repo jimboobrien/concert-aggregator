@@ -3,7 +3,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Form, Button, Spinner, Alert, Tabs, Tab } from 'react-bootstrap';
 import { ScrapedData, ConcertEvent } from '@/types';
-import { getScrapeData, getVenues, addVenue } from '../actions';
+import { getScrapeData, getVenues, addVenue, followVenue, checkIfFollowingVenue } from '../actions';
+import FollowVenuePrompt from '@/components/FollowVenuePrompt';
+import FollowArtistPrompt from '@/components/FollowArtistPrompt';
+import { createClient } from '@/utils/supabase/client';
 
 type StorageOption = 'json' | 'supabase' | 'both';
 type Venue = { id: string; name: string };
@@ -22,7 +25,11 @@ const ImportPage = () => {
   const [venuesLoading, setVenuesLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ImportTab>('url');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showFollowPrompt, setShowFollowPrompt] = useState(false);
+  const [forceFreshData, setForceFreshData] = useState(false);
+  const [followAfterScrape, setFollowAfterScrape] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [artistIds, setArtistIds] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -44,13 +51,73 @@ const ImportPage = () => {
     setError(null);
     setSuccess(null);
     setData(null);
+    setShowFollowPrompt(false);
+    setArtistIds({});
   }, [activeTab]);
+
+  // Find or create artists based on event titles
+  useEffect(() => {
+    const findOrCreateArtists = async () => {
+      if (!data?.json?.events || data.json.events.length === 0) return;
+      
+      const supabase = createClient();
+      const artistMap: Record<string, string> = {};
+      
+      // Process each event to find or create artists
+      for (const event of data.json.events) {
+        if (!event.title) continue;
+        
+        // Clean up the artist name
+        const artistName = event.title.trim();
+        
+        // Check if this artist already exists
+        const { data: existingArtists, error } = await supabase
+          .from('artists')
+          .select('id, name')
+          .ilike('name', artistName)
+          .limit(1);
+        
+        if (error) {
+          console.error('Error finding artist:', error);
+          continue;
+        }
+        
+        if (existingArtists && existingArtists.length > 0) {
+          // Artist exists, use their ID
+          artistMap[artistName] = existingArtists[0].id;
+        } else {
+          // Artist doesn't exist, create them
+          const { data: newArtist, error: insertError } = await supabase
+            .from('artists')
+            .insert({ name: artistName })
+            .select()
+            .single();
+          
+          if (insertError) {
+            console.error('Error creating artist:', insertError);
+            continue;
+          }
+          
+          if (newArtist) {
+            artistMap[artistName] = newArtist.id;
+          }
+        }
+      }
+      
+      setArtistIds(artistMap);
+    };
+    
+    findOrCreateArtists();
+  }, [data]);
 
   // Handle URL import
   const handleUrlSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    setData(null);
+    setShowFollowPrompt(false);
+    setArtistIds({});
     
     if (!url) {
       setError('Please enter a URL.');
@@ -59,31 +126,27 @@ const ImportPage = () => {
 
     let venueIdToUse = selectedVenue;
 
-    if (storage === 'supabase' || storage === 'both') {
-      if (selectedVenue === 'add-new-venue') {
-        if (!newVenueName.trim()) {
-          setError('Please enter a name for the new venue.');
-          return;
-        }
-        setLoading(true);
-        const newVenue = await addVenue(newVenueName.trim());
-        setLoading(false);
-
-        if ('error' in newVenue) {
-          setError(newVenue.error);
-          return;
-        }
-        
-        // Add new venue to the list and select it
-        const newVenueTyped = newVenue as Venue;
-        setVenues(prev => [...prev, newVenueTyped]);
-        setSelectedVenue(newVenueTyped.id);
-        venueIdToUse = newVenueTyped.id;
-        setNewVenueName(''); // Clear the input field after adding
-      } else if (!selectedVenue) {
-        setError('Please select a venue when saving to Supabase.');
+    // Only need to handle venue creation if explicitly saving to Supabase and using add-new-venue
+    if ((storage === 'supabase' || storage === 'both') && selectedVenue === 'add-new-venue') {
+      if (!newVenueName.trim()) {
+        setError('Please enter a name for the new venue.');
         return;
       }
+      setLoading(true);
+      const newVenue = await addVenue(newVenueName.trim());
+      setLoading(false);
+
+      if ('error' in newVenue) {
+        setError(newVenue.error);
+        return;
+      }
+      
+      // Add new venue to the list and select it
+      const newVenueTyped = newVenue as Venue;
+      setVenues(prev => [...prev, newVenueTyped]);
+      setSelectedVenue(newVenueTyped.id);
+      venueIdToUse = newVenueTyped.id;
+      setNewVenueName(''); // Clear the input field after adding
     }
 
     setLoading(true);
@@ -93,9 +156,16 @@ const ImportPage = () => {
       const storageOptions = {
         saveToJson: storage === 'json' || storage === 'both',
         saveToSupabase: storage === 'supabase' || storage === 'both',
+        detectVenue: true, // Always detect venue
+        useCache: !forceFreshData // Use cached data unless fresh data is requested
       };
 
-      const result = await getScrapeData(url, storageOptions, venueIdToUse);
+      // For JSON-only storage, we'll let the system auto-detect the venue
+      // For Supabase storage, we'll use the selected venue if provided
+      const useVenueId = storageOptions.saveToSupabase ? venueIdToUse : undefined;
+      const useVenueName = storageOptions.saveToSupabase ? venues.find(v => v.id === venueIdToUse)?.name : undefined;
+
+      const result = await getScrapeData(url, storageOptions, useVenueId, useVenueName);
 
       if ('error' in result) {
         setError(result.error);
@@ -114,6 +184,69 @@ const ImportPage = () => {
         }
         
         setSuccess(successMsg);
+        
+        // Check if a venue was automatically detected
+        if (result.metadata?.venueId) {
+          const detectedVenueId = result.metadata.venueId as string;
+          
+          // If the venue was auto-detected and we don't already have it in our list, fetch venues again
+          if (!venues.some(v => v.id === detectedVenueId)) {
+            const venueData = await getVenues();
+            setVenues(venueData);
+          }
+          
+          setSelectedVenue(detectedVenueId);
+          
+          // If follow after scrape is checked, follow the venue automatically
+          if (followAfterScrape) {
+            try {
+              // Check if already following
+              const isFollowing = await checkIfFollowingVenue(detectedVenueId);
+              
+              if (!isFollowing) {
+                const followResult = await followVenue(detectedVenueId);
+                if (followResult.success) {
+                  console.log(`Automatically followed venue: ${followResult.message}`);
+                } else {
+                  console.warn(`Failed to follow venue: ${followResult.message}`);
+                }
+              } else {
+                console.log('Already following this venue');
+              }
+            } catch (error) {
+              console.error('Error following venue:', error);
+            }
+          }
+          
+          // Show the follow prompt only if we're not auto-following
+          setShowFollowPrompt(!followAfterScrape);
+        }
+        // Show follow prompt if venue was selected and saved to Supabase
+        else if (venueIdToUse && venueIdToUse !== 'add-new-venue' && (storage === 'supabase' || storage === 'both')) {
+          // If follow after scrape is checked, follow the venue automatically
+          if (followAfterScrape) {
+            try {
+              // Check if already following
+              const isFollowing = await checkIfFollowingVenue(venueIdToUse);
+              
+              if (!isFollowing) {
+                const followResult = await followVenue(venueIdToUse);
+                if (followResult.success) {
+                  console.log(`Automatically followed venue: ${followResult.message}`);
+                } else {
+                  console.warn(`Failed to follow venue: ${followResult.message}`);
+                }
+              } else {
+                console.log('Already following this venue');
+              }
+            } catch (error) {
+              console.error('Error following venue:', error);
+            }
+          }
+          
+          // Show the follow prompt only if we're not auto-following
+          setShowFollowPrompt(!followAfterScrape);
+        }
       }
     } catch (err) {
       console.error('Error during import:', err);
@@ -136,6 +269,8 @@ const ImportPage = () => {
     setError(null);
     setSuccess(null);
     setData(null);
+    setShowFollowPrompt(false);
+    setArtistIds({});
 
     if (!selectedFile) {
       setError('Please select a JSON file to import.');
@@ -147,6 +282,7 @@ const ImportPage = () => {
       return;
     }
 
+    // Only need to handle venue creation if explicitly adding a new venue
     if (selectedVenue === 'add-new-venue') {
       if (!newVenueName.trim()) {
         setError('Please enter a name for the new venue.');
@@ -166,9 +302,6 @@ const ImportPage = () => {
       setVenues(prev => [...prev, newVenueTyped]);
       setSelectedVenue(newVenueTyped.id);
       setNewVenueName('');
-    } else if (!selectedVenue) {
-      setError('Please select a venue for this import.');
-      return;
     }
 
     setLoading(true);
@@ -178,6 +311,7 @@ const ImportPage = () => {
       const formData = new FormData();
       formData.append('file', selectedFile);
       formData.append('venueId', selectedVenue);
+      formData.append('followVenue', followAfterScrape.toString());
 
       const response = await fetch('/api/import-json', {
         method: 'POST',
@@ -190,7 +324,42 @@ const ImportPage = () => {
         throw new Error(result.error || 'Failed to import JSON file');
       }
 
-      setSuccess(`Successfully imported ${result.count} events to Supabase for venue: ${venues.find(v => v.id === selectedVenue)?.name}`);
+      // If the API returned a venueId (it might have auto-detected one), use that
+      if (result.venueId) {
+        // If the venue was auto-detected and we don't already have it in our list, fetch venues again
+        if (!venues.some(v => v.id === result.venueId)) {
+          const venueData = await getVenues();
+          setVenues(venueData);
+        }
+        
+        setSelectedVenue(result.venueId);
+        
+        // If follow after scrape is checked, follow the venue automatically
+        if (followAfterScrape) {
+          try {
+            // Check if already following
+            const isFollowing = await checkIfFollowingVenue(result.venueId);
+            
+            if (!isFollowing) {
+              const followResult = await followVenue(result.venueId);
+              if (followResult.success) {
+                console.log(`Automatically followed venue: ${followResult.message}`);
+              } else {
+                console.warn(`Failed to follow venue: ${followResult.message}`);
+              }
+            } else {
+              console.log('Already following this venue');
+            }
+          } catch (error) {
+            console.error('Error following venue:', error);
+          }
+        }
+      }
+
+      setSuccess(`Successfully imported ${result.count} events to Supabase for venue: ${result.venueName || venues.find(v => v.id === selectedVenue)?.name}`);
+      
+      // Show follow prompt only if we're not auto-following
+      setShowFollowPrompt(!followAfterScrape);
 
       // Reset file input
       if (fileInputRef.current) {
@@ -300,6 +469,35 @@ const ImportPage = () => {
                   </Form.Control>
                 </Form.Group>
 
+                <div className="d-flex mb-3">
+                  <div className="form-check me-4">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      id="forceFreshData"
+                      checked={forceFreshData}
+                      onChange={(e) => setForceFreshData(e.target.checked)}
+                      disabled={loading}
+                    />
+                    <label className="form-check-label" htmlFor="forceFreshData">
+                      Force fresh data (ignore cache)
+                    </label>
+                  </div>
+                  <div className="form-check">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      id="followAfterScrape"
+                      checked={followAfterScrape}
+                      onChange={(e) => setFollowAfterScrape(e.target.checked)}
+                      disabled={loading}
+                    />
+                    <label className="form-check-label" htmlFor="followAfterScrape">
+                      Follow venue after scrape
+                    </label>
+                  </div>
+                </div>
+
                 {renderVenueSelector()}
 
                 <Button variant="primary" type="submit" disabled={loading}>
@@ -333,6 +531,20 @@ const ImportPage = () => {
 
                 {renderVenueSelector()}
 
+                <div className="form-check mb-3">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id="followAfterFileImport"
+                    checked={followAfterScrape}
+                    onChange={(e) => setFollowAfterScrape(e.target.checked)}
+                    disabled={loading}
+                  />
+                  <label className="form-check-label" htmlFor="followAfterFileImport">
+                    Follow venue after import
+                  </label>
+                </div>
+
                 <Button variant="primary" type="submit" disabled={loading || !selectedFile}>
                   {loading ? (
                     <>
@@ -360,6 +572,14 @@ const ImportPage = () => {
           {error && <Alert variant="danger" className="mt-4">{error}</Alert>}
           {success && <Alert variant="success" className="mt-4">{success}</Alert>}
 
+          {/* Follow venue prompt - only show if not auto-following */}
+          {showFollowPrompt && selectedVenue && selectedVenue !== 'add-new-venue' && (
+            <FollowVenuePrompt 
+              venueId={selectedVenue} 
+              venueName={venues.find(v => v.id === selectedVenue)?.name}
+            />
+          )}
+
           {data && (
             <div className="card mt-4">
               <div className="card-header">
@@ -374,9 +594,20 @@ const ImportPage = () => {
                     <ul className="list-group">
                       {data.json.events.map((event: ConcertEvent, index: number) => (
                         <li key={index} className="list-group-item">
-                          <strong>{event.title}</strong><br />
-                          <small>Date: {event.date}</small><br />
-                          {event.url && <a href={event.url} target="_blank" rel="noopener noreferrer">View Event</a>}
+                          <div className="d-flex justify-content-between align-items-start">
+                            <div>
+                              <strong>{event.title}</strong><br />
+                              <small>Date: {event.date}</small><br />
+                              {event.url && <a href={event.url} target="_blank" rel="noopener noreferrer" className="me-2">View Event</a>}
+                            </div>
+                            {event.title && artistIds[event.title] && (
+                              <FollowArtistPrompt 
+                                artistId={artistIds[event.title]} 
+                                artistName={event.title}
+                                compact={true}
+                              />
+                            )}
+                          </div>
                         </li>
                       ))}
                     </ul>

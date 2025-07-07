@@ -12,9 +12,9 @@
     "import-json": "ts-node ./scripts/import-json.ts",
     "import-to-supabase": "ts-node ./scripts/import-to-supabase.ts",
     "test-disabled": "playwright test",
-    "test:auth": "playwright test tests/auth",
-    "test:ui": "playwright test --ui",
-    "test:report": "playwright show-report"
+    "test-disabled:auth": "playwright test tests/auth",
+    "test-disabled:ui": "playwright test --ui",
+    "test-disabled:report": "playwright show-report"
   },
   "dependencies": {
     "@mendable/firecrawl-js": "^1.25.5",

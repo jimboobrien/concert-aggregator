@@ -7,7 +7,6 @@ import navLinks from './nav-links.json';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { createClient } from '@/utils/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
-import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/navigation';
 
 interface NavLink {
@@ -19,9 +18,6 @@ interface NavLink {
   adminOnly?: boolean;
 }
 
-interface DecodedToken {
-  user_role?: string;
-}
 
 const MainNavbar = () => {
   const supabase = createClient();
@@ -30,16 +26,22 @@ const MainNavbar = () => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
-  const checkUserStatus = useCallback((session: Session | null) => {
+  const checkUserStatus = useCallback(async (session: Session | null) => {
     const currentUser = session?.user ?? null;
     setUser(currentUser);
     
-    if (session?.access_token) {
+    if (currentUser) {
+      // Check admin status using the database
       try {
-        const decodedToken = jwtDecode<DecodedToken>(session.access_token);
-        setIsAdmin(decodedToken.user_role === 'admin');
+        const { data: role } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', currentUser.id)
+          .single();
+        
+        setIsAdmin(role?.role === 'admin');
       } catch (e) {
-        console.error('Error decoding JWT:', e);
+        console.error('Error checking admin status:', e);
         setIsAdmin(false);
       }
     } else {
@@ -47,7 +49,7 @@ const MainNavbar = () => {
     }
     
     setLoading(false);
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -117,6 +119,35 @@ const MainNavbar = () => {
                 {link.label}
               </Nav.Link>
             ))}
+            {isAdmin && (
+              <NavDropdown
+                title={
+                  <>
+                    <i className="bi bi-gear-fill me-2"></i>
+                    Admin
+                  </>
+                }
+                id="admin-dropdown"
+              >
+                <NavDropdown.Item as={Link} href="/admin/dashboard">
+                  <i className="bi bi-speedometer2 me-2"></i>
+                  Admin Dashboard
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item as={Link} href="/admin/artist-management">
+                  <i className="bi bi-people-fill me-2"></i>
+                  Artist Management
+                </NavDropdown.Item>
+                <NavDropdown.Item as={Link} href="/admin/venue-management">
+                  <i className="bi bi-building-fill me-2"></i>
+                  Venue Management
+                </NavDropdown.Item>
+                <NavDropdown.Item as={Link} href="/admin/user-management">
+                  <i className="bi bi-people me-2"></i>
+                  User Management
+                </NavDropdown.Item>
+              </NavDropdown>
+            )}
           </Nav>
           <Nav>
             {loading ? (
@@ -132,15 +163,6 @@ const MainNavbar = () => {
               >
                 <NavDropdown.Item as={Link} href="/profile">Profile</NavDropdown.Item>
                 <NavDropdown.Item as={Link} href="/account">Account</NavDropdown.Item>
-                {isAdmin && (
-                  <>
-                    <NavDropdown.Divider />
-                    <NavDropdown.Item as={Link} href="/admin/dashboard">
-                      <i className="bi bi-shield-lock me-2"></i>
-                      Admin Dashboard
-                    </NavDropdown.Item>
-                  </>
-                )}
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
               </NavDropdown>

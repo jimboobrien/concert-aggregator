@@ -20,6 +20,8 @@ export interface ConcertEvent {
   title: string;
   date: string;
   url?: string;
+  ticketUrl?: string;
+  scrapedAt?: string;
 }
 
 export interface CrawlConfig {
@@ -28,12 +30,8 @@ export interface CrawlConfig {
   schema?: SelectorSchema;
 }
 
-export interface ScrapedEvent {
-  title: string;
-  date: string;
-  ticketUrl?: string;
-  scrapedAt: string;
-}
+// Type alias for backward compatibility
+export type ScrapedEvent = ConcertEvent;
 
 export interface SelectorSchema {
   [key: string]: string;

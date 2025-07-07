@@ -16,6 +16,15 @@ export default async function ProfilePage() {
     return redirect('/login')
   }
 
+  // Check if user is admin
+  const { data: userRole } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', user.id)
+    .single()
+  
+  const isAdmin = userRole?.role === 'admin'
+
   const { data: followed_artists, error: artistsError } = await supabase
     .from('followed_artists')
     .select('artists (*)')
@@ -40,8 +49,16 @@ export default async function ProfilePage() {
         <div className="col-md-8">
           <div className="card mt-5">
             <div className="card-body">
-              <h1 className="card-title">User Profile</h1>
-              <p>This is your public profile page. You can share this with others.</p>
+              <div className="d-flex justify-content-between align-items-center">
+                <h1 className="card-title mb-0">User Profile</h1>
+                {isAdmin && (
+                  <span className="badge bg-danger fs-6">
+                    <i className="bi bi-shield-check me-1"></i>
+                    Administrator
+                  </span>
+                )}
+              </div>
+              <p className="mt-3">This is your public profile page. You can share this with others.</p>
             </div>
           </div>
           <ProfileForm user={user} />

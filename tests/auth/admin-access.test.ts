@@ -8,12 +8,12 @@ test.describe('Admin Access', () => {
     await page.fill('input[name="password"]', 'Admin1234!');
     await page.click('button[type="submit"]');
     
-    // Ensure we're logged in by checking for account page
-    await expect(page).toHaveURL('/account');
+    // Wait for login redirect - could go to dashboard or account
+    await page.waitForURL(/\/(dashboard|account)/);
   });
   
   test('should access admin dashboard', async ({ page }) => {
-    await page.goto('/admin');
+    await page.goto('/admin/dashboard');
     
     // Check if admin dashboard is displayed
     const heading = await page.textContent('h1');
@@ -28,12 +28,36 @@ test.describe('Admin Access', () => {
     expect(heading).toContain('Artist Management');
   });
   
-  test('should access admin venues page', async ({ page }) => {
-    await page.goto('/admin/venues');
+  test('should access admin venue management', async ({ page }) => {
+    await page.goto('/admin/venue-management');
     
-    // Check if venues page is accessible
+    // Check if venue management page is accessible
     const heading = await page.textContent('h1');
-    expect(heading).toContain('Venues');
+    expect(heading).toContain('Venue Management');
+  });
+
+  test('should access admin user management', async ({ page }) => {
+    await page.goto('/admin/user-management');
+    
+    // Check if user management page is accessible
+    const heading = await page.textContent('h1');
+    expect(heading).toContain('User Management');
+  });
+
+  test('should show admin dropdown in navigation', async ({ page }) => {
+    await page.goto('/dashboard');
+    
+    // Check if admin dropdown is visible
+    await expect(page.locator('text=Admin')).toBeVisible();
+    
+    // Click admin dropdown
+    await page.click('text=Admin');
+    
+    // Check if admin menu items are visible
+    await expect(page.locator('text=Admin Dashboard')).toBeVisible();
+    await expect(page.locator('text=Artist Management')).toBeVisible();
+    await expect(page.locator('text=Venue Management')).toBeVisible();
+    await expect(page.locator('text=User Management')).toBeVisible();
   });
 });
 
@@ -45,22 +69,42 @@ test.describe('Regular User Admin Access', () => {
     await page.fill('input[name="password"]', 'Test1234!');
     await page.click('button[type="submit"]');
     
-    // Ensure we're logged in by checking for account page
-    await expect(page).toHaveURL('/account');
+    // Wait for login redirect - could go to dashboard or account
+    await page.waitForURL(/\/(dashboard|account)/);
   });
   
   test('should be redirected when trying to access admin dashboard', async ({ page }) => {
-    await page.goto('/admin');
+    await page.goto('/admin/dashboard');
     
-    // Check if redirected away from admin area
-    await expect(page).not.toHaveURL('/admin');
+    // Should be redirected to home page
+    await expect(page).toHaveURL('/');
+  });
+
+  test('should be redirected when trying to access artist management', async ({ page }) => {
+    await page.goto('/admin/artist-management');
     
-    // Check for access denied message if there is one
-    const errorMessage = await page.textContent('body');
-    if (errorMessage) {
-      expect(errorMessage.includes('access denied') || !page.url().includes('/admin')).toBeTruthy();
-    } else {
-      expect(page.url()).not.toContain('/admin');
-    }
+    // Should be redirected to home page
+    await expect(page).toHaveURL('/');
+  });
+
+  test('should be redirected when trying to access venue management', async ({ page }) => {
+    await page.goto('/admin/venue-management');
+    
+    // Should be redirected to home page
+    await expect(page).toHaveURL('/');
+  });
+
+  test('should be redirected when trying to access user management', async ({ page }) => {
+    await page.goto('/admin/user-management');
+    
+    // Should be redirected to home page
+    await expect(page).toHaveURL('/');
+  });
+
+  test('should not show admin dropdown in navigation', async ({ page }) => {
+    await page.goto('/dashboard');
+    
+    // Admin dropdown should not be visible for regular users
+    await expect(page.locator('text=Admin')).not.toBeVisible();
   });
 }); 

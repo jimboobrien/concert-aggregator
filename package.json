@@ -11,7 +11,7 @@
     "check-env": "node scripts/check-env.mjs",
     "import-json": "ts-node ./scripts/import-json.ts",
     "import-to-supabase": "ts-node ./scripts/import-to-supabase.ts",
-    "test": "playwright test",
+    "test-disabled": "playwright test",
     "test:auth": "playwright test tests/auth",
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report"

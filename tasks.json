@@ -4,7 +4,7 @@
       "id": "phase-1",
       "title": "Version 2.0 - Core Scraping API",
       "description": "Establish a robust, configuration-driven system for data collection.",
-      "status": "in-progress",
+      "status": "complete",
       "tasks": [
         {
           "id": "1.1",
@@ -75,7 +75,7 @@
       "id": "phase-3",
       "title": "Version 3.0 - Venue & Artist Following",
       "description": "Connect users to the data that matters most to them.",
-      "status": "in-progress",
+      "status": "complete",
       "tasks": [
         {
           "id": "3.1",
@@ -101,7 +101,7 @@
       "id": "phase-4",
       "title": "Version 3.5 - The Personalized Feed",
       "description": "Deliver the core value proposition of the app: a personalized concert feed.",
-      "status": "in-progress",
+      "status": "complete",
       "tasks": [
         {
           "id": "4.1",

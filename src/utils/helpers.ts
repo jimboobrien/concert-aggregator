@@ -2,6 +2,8 @@
  * Helper functions that can be used across the application
  */
 
+import { redirect } from "next/navigation";
+
 export const getURL = () => {
   let url = 
     process.env.NEXT_PUBLIC_SITE_URL || 
@@ -57,4 +59,19 @@ export const calculateTrialEndUnixTimestamp = (
   
   // Return the Unix timestamp in seconds
   return Math.floor(trialEndDate.getTime() / 1000);
-}; 
+};
+
+/**
+ * Redirects to a specified path with an encoded message as a query parameter.
+ * @param {('error' | 'success')} type - The type of message, either 'error' or 'success'.
+ * @param {string} path - The path to redirect to.
+ * @param {string} message - The message to be encoded and added as a query parameter.
+ * @returns {never} This function doesn't return as it triggers a redirect.
+ */
+export function encodedRedirect(
+  type: "error" | "success",
+  path: string,
+  message: string,
+) {
+  return redirect(`${path}?${type}=${encodeURIComponent(message)}`);
+} 

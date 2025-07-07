@@ -6,7 +6,8 @@ This directory contains automated tests for the authentication system in the Con
 
 - `auth/login.test.ts` - Tests for login functionality
 - `auth/password-reset.test.ts` - Tests for password reset functionality
-- `auth/admin-access.test.ts` - Tests for admin role checks
+- `auth/admin-access.test.ts` - Tests for admin role checks and navigation
+- `auth/user-management.test.ts` - Tests for user management and admin features
 - `auth/profile-update.test.ts` - Tests for profile updates
 - `auth/artist-following.test.ts` - Tests for artist following functionality
 - `auth/venue-following.test.ts` - Tests for venue following functionality
@@ -37,6 +38,11 @@ This directory contains automated tests for the authentication system in the Con
    - Create test user accounts:
      - Regular user: `test@example.com` / `Test1234!`
      - Admin user: `admin@example.com` / `Admin1234!`
+   - Assign admin role to the admin user in the `user_roles` table:
+     ```sql
+     INSERT INTO user_roles (user_id, role) 
+     VALUES ((SELECT id FROM auth.users WHERE email = 'admin@example.com'), 'admin');
+     ```
    - Create test artists and venues in the database
 
 ### Running All Authentication Tests

@@ -3,44 +3,46 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Table, Button, Form, InputGroup, Modal, Alert, Spinner } from 'react-bootstrap';
 import { createClient } from '@/utils/supabase/client';
-import { deleteArtistAction } from './actions';
+import { deleteVenueAction } from './actions';
 
-interface Artist {
+interface Venue {
   id: string;
   name: string;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  url: string | null;
   created_at: string;
-  updated_at: string;
-  view_count?: number;
-  search_count?: number;
-  venue_appearance_count?: number;
+  event_count?: number;
+  follower_count?: number;
 }
 
-export default function ArtistManagementContent() {
-  const [artists, setArtists] = useState<Artist[]>([]);
+export default function VenueManagementContent() {
+  const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [artistToDelete, setArtistToDelete] = useState<Artist | null>(null);
+  const [venueToDelete, setVenueToDelete] = useState<Venue | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<keyof Artist>('name');
+  const [sortField, setSortField] = useState<keyof Venue>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize] = useState(20);
   
-  // Load artists from the database
-  const loadArtists = useCallback(async () => {
+  // Load venues from the database
+  const loadVenues = useCallback(async () => {
     setLoading(true);
     setError(null);
     
     try {
       const supabase = createClient();
       
-      // Count total artists for pagination
+      // Count total venues for pagination
       const { count } = await supabase
-        .from('artists')
+        .from('venues')
         .select('*', { count: 'exact', head: true })
         .ilike('name', `%${searchTerm}%`);
       
@@ -49,9 +51,9 @@ export default function ArtistManagementContent() {
         setTotalPages(Math.ceil(count / pageSize));
       }
       
-      // Fetch artists with pagination and sorting
+      // Fetch venues with pagination and sorting
       const { data, error } = await supabase
-        .from('artists')
+        .from('venues')
         .select('*')
         .ilike('name', `%${searchTerm}%`)
         .order(sortField, { ascending: sortDirection === 'asc' })
@@ -61,29 +63,50 @@ export default function ArtistManagementContent() {
         throw error;
       }
       
-      setArtists(data || []);
+      // Get counts for each venue separately (more reliable)
+      const processedVenues = await Promise.all((data || []).map(async (venue) => {
+        // Get event count
+        const { count: eventCount } = await supabase
+          .from('events')
+          .select('*', { count: 'exact', head: true })
+          .eq('venue_id', venue.id);
+        
+        // Get follower count
+        const { count: followerCount } = await supabase
+          .from('followed_venues')
+          .select('*', { count: 'exact', head: true })
+          .eq('venue_id', venue.id);
+        
+        return {
+          ...venue,
+          event_count: eventCount || 0,
+          follower_count: followerCount || 0
+        };
+      }));
+      
+      setVenues(processedVenues);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load artists';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load venues';
       setError(errorMessage);
-      console.error('Error loading artists:', err);
+      console.error('Error loading venues:', err);
     } finally {
       setLoading(false);
     }
   }, [currentPage, pageSize, searchTerm, sortDirection, sortField]);
   
-  // Load artists on component mount
+  // Load venues on component mount
   useEffect(() => {
-    loadArtists();
-  }, [loadArtists]);
+    loadVenues();
+  }, [loadVenues]);
 
   // Handle search
   const handleSearch = () => {
     setCurrentPage(1); // Reset to first page when searching
-    loadArtists();
+    loadVenues();
   };
 
   // Handle sort change
-  const handleSort = (field: keyof Artist) => {
+  const handleSort = (field: keyof Venue) => {
     if (field === sortField) {
       // Toggle direction if clicking the same field
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -94,36 +117,42 @@ export default function ArtistManagementContent() {
     }
   };
 
-  // Handle artist deletion
-  const handleDeleteArtist = async () => {
-      if (!artistToDelete) return;
+  // Handle venue deletion
+  const handleDeleteVenue = async () => {
+      if (!venueToDelete) return;
       
       setIsDeleting(true);
       setDeleteError(null);
       
       try {
-        // Use the server action to delete the artist
-        await deleteArtistAction(artistToDelete.id, artistToDelete.name);
+        // Use the server action to delete the venue
+        await deleteVenueAction(venueToDelete.id, venueToDelete.name);
         
-        // Remove the deleted artist from the list
-        setArtists(artists.filter(artist => artist.id !== artistToDelete.id));
+        // Remove the deleted venue from the list
+        setVenues(venues.filter(venue => venue.id !== venueToDelete.id));
         setShowDeleteModal(false);
       } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to delete artist';
+        const errorMessage = err instanceof Error ? err.message : 'Failed to delete venue';
         setDeleteError(errorMessage);
-        console.error('Error deleting artist:', err);
+        console.error('Error deleting venue:', err);
       } finally {
         setIsDeleting(false);
       }
     };
 
   // Render sort indicator
-  const renderSortIndicator = (field: keyof Artist) => {
+  const renderSortIndicator = (field: keyof Venue) => {
     if (sortField !== field) return null;
     
     return sortDirection === 'asc' 
       ? <i className="bi bi-caret-up-fill ms-1"></i>
       : <i className="bi bi-caret-down-fill ms-1"></i>;
+  };
+
+  // Format location
+  const formatLocation = (venue: Venue) => {
+    const parts = [venue.city, venue.state, venue.country].filter(Boolean);
+    return parts.length > 0 ? parts.join(', ') : 'Unknown';
   };
 
   return (
@@ -132,7 +161,7 @@ export default function ArtistManagementContent() {
       <div className="mb-4">
         <InputGroup>
           <Form.Control
-            placeholder="Search artists..."
+            placeholder="Search venues..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -158,11 +187,11 @@ export default function ArtistManagementContent() {
           <Spinner animation="border" role="status">
             <span className="visually-hidden">Loading...</span>
           </Spinner>
-          <p className="mt-2">Loading artists...</p>
+          <p className="mt-2">Loading venues...</p>
         </div>
       ) : (
         <>
-          {/* Artists table */}
+          {/* Venues table */}
           <Table striped bordered hover responsive>
             <thead>
               <tr>
@@ -172,47 +201,52 @@ export default function ArtistManagementContent() {
                 >
                   Name {renderSortIndicator('name')}
                 </th>
+                <th>Location</th>
+                <th>Website</th>
                 <th 
-                  onClick={() => handleSort('view_count')}
+                  onClick={() => handleSort('event_count')}
                   style={{ cursor: 'pointer' }}
                 >
-                  Views {renderSortIndicator('view_count')}
+                  Events {renderSortIndicator('event_count')}
                 </th>
                 <th 
-                  onClick={() => handleSort('search_count')}
+                  onClick={() => handleSort('follower_count')}
                   style={{ cursor: 'pointer' }}
                 >
-                  Searches {renderSortIndicator('search_count')}
-                </th>
-                <th 
-                  onClick={() => handleSort('venue_appearance_count')}
-                  style={{ cursor: 'pointer' }}
-                >
-                  Venue Appearances {renderSortIndicator('venue_appearance_count')}
+                  Followers {renderSortIndicator('follower_count')}
                 </th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {artists.length === 0 ? (
+              {venues.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-4">
-                    No artists found
+                  <td colSpan={6} className="text-center py-4">
+                    No venues found
                   </td>
                 </tr>
               ) : (
-                artists.map((artist) => (
-                  <tr key={artist.id}>
-                    <td>{artist.name}</td>
-                    <td>{artist.view_count || 0}</td>
-                    <td>{artist.search_count || 0}</td>
-                    <td>{artist.venue_appearance_count || 0}</td>
+                venues.map((venue) => (
+                  <tr key={venue.id}>
+                    <td>{venue.name}</td>
+                    <td>{formatLocation(venue)}</td>
+                    <td>
+                      {venue.url ? (
+                        <a href={venue.url} target="_blank" rel="noopener noreferrer" className="text-truncate d-inline-block" style={{ maxWidth: '200px' }}>
+                          {venue.url}
+                        </a>
+                      ) : (
+                        'N/A'
+                      )}
+                    </td>
+                    <td>{venue.event_count || 0}</td>
+                    <td>{venue.follower_count || 0}</td>
                     <td>
                       <Button 
                         variant="danger" 
                         size="sm"
                         onClick={() => {
-                          setArtistToDelete(artist);
+                          setVenueToDelete(venue);
                           setShowDeleteModal(true);
                         }}
                       >
@@ -266,14 +300,14 @@ export default function ArtistManagementContent() {
               {deleteError}
             </Alert>
           )}
-          <p>Are you sure you want to delete the artist <strong>{artistToDelete?.name}</strong>?</p>
-          <p className="text-danger">This action cannot be undone.</p>
+          <p>Are you sure you want to delete the venue <strong>{venueToDelete?.name}</strong>?</p>
+          <p className="text-danger">This action will also delete all events and follower relationships for this venue and cannot be undone.</p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)} disabled={isDeleting}>
             Cancel
           </Button>
-          <Button variant="danger" onClick={handleDeleteArtist} disabled={isDeleting}>
+          <Button variant="danger" onClick={handleDeleteVenue} disabled={isDeleting}>
             {isDeleting ? (
               <>
                 <Spinner
@@ -287,11 +321,11 @@ export default function ArtistManagementContent() {
                 Deleting...
               </>
             ) : (
-              <>Delete Artist</>
+              <>Delete Venue</>
             )}
           </Button>
         </Modal.Footer>
       </Modal>
     </div>
   );
-} 
+}

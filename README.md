@@ -1,24 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hometown Music Tracker
+
+A Next.js application for tracking concerts and music events at local venues. Users can follow their favorite artists and venues to receive personalized updates about upcoming shows.
+
+## Features
+
+- **User Authentication**: Secure login, signup, and password reset flows
+- **Artist & Venue Following**: Follow your favorite artists and venues
+- **Personalized Feed**: See upcoming shows from artists and venues you follow
+- **Admin Dashboard**: Manage artists, venues, and events
+- **Responsive Design**: Works on desktop and mobile devices
+
+## Tech Stack
+
+- **Frontend**: Next.js 14+ with App Router, React, Bootstrap
+- **Backend**: Next.js Server Actions, Supabase
+- **Authentication**: Supabase Auth with Next.js Server Actions
+- **Database**: PostgreSQL (via Supabase)
+- **Deployment**: Vercel
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18.17.0 or later
+- npm or yarn
+- Supabase account and project
+
+### Environment Setup
+
+Create a `.env.local` file with the following variables:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+### Installation
 
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Authentication System
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The application uses Supabase Auth with Next.js Server Actions for authentication. This approach ensures secure cookie handling and provides a robust authentication flow.
+
+### Key Features
+
+- **Server Actions**: All authentication operations are handled by server actions
+- **Secure Cookie Handling**: Cookies are managed securely by the server
+- **Role-Based Access Control**: Support for admin and user roles
+- **Form Validation**: Comprehensive validation for all authentication forms
+- **Error Handling**: User-friendly error messages and detailed logging
+
+### Authentication Flow
+
+1. User registers or logs in
+2. Server action authenticates the user and sets session cookies
+3. Middleware protects routes based on authentication status
+4. User can update profile, reset password, or log out
+
+For detailed documentation on the authentication system, see [Authentication System Documentation](docs/authentication-system.md).
+
+## Project Structure
+
+- **`/app`**: Next.js App Router pages and components
+- **`/actions`**: Server actions for authentication and data operations
+- **`/components`**: Reusable React components
+- **`/utils`**: Utility functions and helpers
+- **`/docs`**: Project documentation
+- **`/public`**: Static assets
+
+## Documentation
+
+For more detailed documentation, see the [docs folder](docs/README.md).
+
+## Development
+
+### Running Tests
+
+```bash
+npm run test
+```
+
+### Linting
+
+```bash
+npm run lint
+```
+
+## Deployment
+
+The application is configured for deployment on Vercel. See [Vercel Deployment Guide](docs/vercel-deployment-guide.md) for details.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Learn More
 

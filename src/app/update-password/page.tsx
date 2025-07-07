@@ -1,6 +1,8 @@
-import { updatePassword } from './actions'
+import { updatePassword } from '@/actions/auth'
 
 export default async function UpdatePasswordPage({ searchParams }: { searchParams: { message: string } }) {
+  const isError = searchParams?.message?.toLowerCase().includes('error');
+  
   return (
     <div className="container">
       <div className="row justify-content-center">
@@ -11,6 +13,13 @@ export default async function UpdatePasswordPage({ searchParams }: { searchParam
               <p className="text-muted text-center mb-4">
                 Enter your new password below.
               </p>
+              
+              {searchParams?.message && (
+                <div className={`alert ${isError ? 'alert-danger' : 'alert-info'}`}>
+                  {searchParams.message}
+                </div>
+              )}
+              
               <form>
                 <div className="mb-3">
                   <label htmlFor="password">New Password</label>
@@ -20,10 +29,14 @@ export default async function UpdatePasswordPage({ searchParams }: { searchParam
                     name="password"
                     className="form-control"
                     placeholder="••••••••"
+                    minLength={8}
                     required
                   />
+                  <small className="form-text text-muted">
+                    Password must be at least 8 characters long.
+                  </small>
                 </div>
-                 <div className="mb-3">
+                <div className="mb-3">
                   <label htmlFor="confirmPassword">Confirm New Password</label>
                   <input
                     id="confirmPassword"
@@ -31,6 +44,7 @@ export default async function UpdatePasswordPage({ searchParams }: { searchParam
                     name="confirmPassword"
                     className="form-control"
                     placeholder="••••••••"
+                    minLength={8}
                     required
                   />
                 </div>
@@ -38,11 +52,6 @@ export default async function UpdatePasswordPage({ searchParams }: { searchParam
                   <button formAction={updatePassword} className="btn btn-primary">Update Password</button>
                 </div>
               </form>
-               {searchParams?.message && (
-                <p className="mt-4 p-4 bg-light text-center rounded">
-                  {searchParams.message}
-                </p>
-              )}
             </div>
           </div>
         </div>

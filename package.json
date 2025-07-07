@@ -10,7 +10,11 @@
     "scaffold-crud": "node scripts/scaffold-crud.mjs",
     "check-env": "node scripts/check-env.mjs",
     "import-json": "ts-node ./scripts/import-json.ts",
-    "import-to-supabase": "ts-node ./scripts/import-to-supabase.ts"
+    "import-to-supabase": "ts-node ./scripts/import-to-supabase.ts",
+    "test": "playwright test",
+    "test:auth": "playwright test tests/auth",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
     "@mendable/firecrawl-js": "^1.25.5",
@@ -28,6 +32,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.53.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

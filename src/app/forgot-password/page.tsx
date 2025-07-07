@@ -1,4 +1,4 @@
-import { requestPasswordReset } from './actions'
+import { requestPasswordReset } from '@/actions/auth'
 import Link from 'next/link'
 
 export default async function ForgotPasswordPage({
@@ -7,6 +7,7 @@ export default async function ForgotPasswordPage({
   searchParams: { message: string | undefined }
 }) {
   const message = searchParams?.message
+  const isSuccess = message?.includes('If an account exists')
 
   return (
     <div className="container">
@@ -18,6 +19,13 @@ export default async function ForgotPasswordPage({
               <p className="text-muted text-center mb-4">
                 Enter your email address and we will send you a link to reset your password.
               </p>
+              
+              {message && (
+                <div className={`alert ${isSuccess ? 'alert-success' : 'alert-danger'}`}>
+                  {message}
+                </div>
+              )}
+              
               <form>
                 <div className="mb-3">
                   <label htmlFor="email" className="form-label">Email:</label>
@@ -27,14 +35,9 @@ export default async function ForgotPasswordPage({
                   <button formAction={requestPasswordReset} className="btn btn-primary">Send Reset Link</button>
                 </div>
               </form>
-              {message && (
-                <p className="mt-4 p-4 bg-light text-center rounded">
-                  {message}
-                </p>
-              )}
-               <div className="text-center mt-3">
-                  <Link href="/login">Back to Login</Link>
-                </div>
+              <div className="text-center mt-3">
+                <Link href="/login">Back to Login</Link>
+              </div>
             </div>
           </div>
         </div>

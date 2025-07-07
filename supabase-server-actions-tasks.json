@@ -1,0 +1,223 @@
+{
+  "project": "Supabase Server Actions Migration",
+  "description": "Implement Server Actions for Supabase authentication to fix cookie handling issues and improve architecture",
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Create centralized auth actions directory",
+      "description": "Create a new directory structure for centralized auth actions",
+      "steps": [
+        "Create src/actions directory if it doesn't exist",
+        "Create auth.ts file in the actions directory"
+      ],
+      "status": "complete",
+      "priority": "high"
+    },
+    {
+      "id": "2",
+      "title": "Migrate login and signup actions",
+      "description": "Move login and signup actions from src/app/login/actions.ts to the centralized location",
+      "steps": [
+        "Copy the login function to src/actions/auth.ts",
+        "Copy the signup function to src/actions/auth.ts",
+        "Add proper imports and 'use server' directive",
+        "Update the redirects to use more specific paths",
+        "Add improved error handling"
+      ],
+      "status": "complete",
+      "priority": "high",
+      "dependencies": ["1"]
+    },
+    {
+      "id": "3",
+      "title": "Migrate password reset actions",
+      "description": "Move password reset actions from their current locations to the centralized file",
+      "steps": [
+        "Move requestPasswordReset from src/app/forgot-password/actions.ts",
+        "Move updatePassword from src/app/update-password/actions.ts",
+        "Ensure proper imports and 'use server' directive",
+        "Add improved error handling"
+      ],
+      "status": "complete",
+      "priority": "medium",
+      "dependencies": ["1"]
+    },
+    {
+      "id": "4",
+      "title": "Add logout function",
+      "description": "Create a new logout server action in the centralized location",
+      "steps": [
+        "Create logout function in src/actions/auth.ts",
+        "Implement signOut functionality from Supabase",
+        "Add proper redirect after logout",
+        "Add revalidation of paths"
+      ],
+      "status": "complete",
+      "priority": "high",
+      "dependencies": ["1"]
+    },
+    {
+      "id": "5",
+      "title": "Migrate admin role checks to server actions",
+      "description": "Convert admin role checking functions to server actions",
+      "steps": [
+        "Move isAdmin function to src/actions/auth.ts",
+        "Move hasRole function to src/actions/auth.ts",
+        "Move assignRole function to src/actions/auth.ts",
+        "Ensure proper imports and error handling"
+      ],
+      "status": "complete",
+      "priority": "medium",
+      "dependencies": ["1"]
+    },
+    {
+      "id": "6",
+      "title": "Fix server.ts cookie handling",
+      "description": "Update the Supabase server client creation to properly handle cookie exceptions",
+      "steps": [
+        "Update setAll method in src/utils/supabase/server.ts",
+        "Ensure proper error handling for cookie operations",
+        "Add detailed comments explaining the cookie handling pattern"
+      ],
+      "status": "complete",
+      "priority": "high",
+      "dependencies": []
+    },
+    {
+      "id": "7",
+      "title": "Add user profile management actions",
+      "description": "Create server actions for user profile management",
+      "steps": [
+        "Create updateProfile function in src/actions/auth.ts",
+        "Implement profile updates with proper validation",
+        "Add error handling"
+      ],
+      "status": "complete",
+      "priority": "medium",
+      "dependencies": ["1"]
+    },
+    {
+      "id": "8",
+      "title": "Update login page component",
+      "description": "Update the login page to use the new centralized server actions",
+      "steps": [
+        "Update imports to use actions from src/actions/auth.ts",
+        "Ensure form is properly connected to server actions",
+        "Add error message handling"
+      ],
+      "status": "complete",
+      "priority": "high",
+      "dependencies": ["2"]
+    },
+    {
+      "id": "9",
+      "title": "Update forgot/reset password pages",
+      "description": "Update password-related pages to use the new centralized server actions",
+      "steps": [
+        "Update imports in forgot password page",
+        "Update imports in reset password page",
+        "Ensure forms properly use server actions"
+      ],
+      "status": "complete",
+      "priority": "medium",
+      "dependencies": ["3"]
+    },
+    {
+      "id": "10",
+      "title": "Update AdminGuard component",
+      "description": "Modify AdminGuard to use the centralized admin check server action",
+      "steps": [
+        "Update imports to use action from src/actions/auth.ts",
+        "Replace direct function call with server action",
+        "Ensure proper error handling"
+      ],
+      "status": "complete",
+      "priority": "medium",
+      "dependencies": ["5"]
+    },
+    {
+      "id": "11",
+      "title": "Add redirection and middleware improvements",
+      "description": "Optimize middleware for working with server actions",
+      "steps": [
+        "Review and update middleware.ts to work seamlessly with server actions",
+        "Ensure proper session refreshing",
+        "Add comments explaining the authentication flow"
+      ],
+      "status": "complete",
+      "priority": "medium",
+      "dependencies": ["6"]
+    },
+    {
+      "id": "12",
+      "title": "Add artist/venue following server actions",
+      "description": "Convert artist and venue following functionality to server actions",
+      "steps": [
+        "Create followArtist server action",
+        "Create unfollowArtist server action",
+        "Create followVenue server action",
+        "Create unfollowVenue server action",
+        "Update components to use these actions"
+      ],
+      "status": "complete",
+      "priority": "low",
+      "dependencies": ["1"]
+    },
+    {
+      "id": "13",
+      "title": "Implement form validation in server actions",
+      "description": "Add proper validation to all server actions that process form data",
+      "steps": [
+        "Add validation for login/signup forms",
+        "Add validation for password reset forms",
+        "Add validation for profile update forms",
+        "Implement proper error handling and return values"
+      ],
+      "status": "complete",
+      "priority": "medium",
+      "dependencies": ["2", "3", "7"]
+    },
+    {
+      "id": "14",
+      "title": "Create authentication utility functions",
+      "description": "Add helper functions for common auth operations",
+      "steps": [
+        "Create getCurrentUser helper function",
+        "Create requireAuth helper function",
+        "Create getSession helper function if needed",
+        "Document utility functions"
+      ],
+      "status": "complete",
+      "priority": "medium",
+      "dependencies": ["1"]
+    },
+    {
+      "id": "15",
+      "title": "Add comprehensive documentation",
+      "description": "Document the new authentication system",
+      "steps": [
+        "Update README.md with authentication flow explanation",
+        "Add inline documentation for server actions",
+        "Create example usage documentation"
+      ],
+      "status": "complete",
+      "priority": "low",
+      "dependencies": ["1", "2", "3", "4", "5", "6", "7"]
+    },
+    {
+      "id": "16",
+      "title": "Test all authentication flows",
+      "description": "Thoroughly test each authentication flow to ensure it works correctly",
+      "steps": [
+        "Test login/signup flow",
+        "Test password reset flow",
+        "Test admin role checks",
+        "Test profile updates",
+        "Test artist/venue following"
+      ],
+      "status": "complete",
+      "priority": "high",
+      "dependencies": ["8", "9", "10", "12"]
+    }
+  ]
+} 

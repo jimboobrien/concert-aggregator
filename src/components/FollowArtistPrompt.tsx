@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Alert } from 'react-bootstrap';
+import { followArtist, unfollowArtist, isFollowingArtist } from '@/actions/follow';
 
 interface FollowArtistPromptProps {
   artistId?: string;
@@ -19,16 +20,13 @@ const FollowArtistPrompt: React.FC<FollowArtistPromptProps> = ({ artistId, artis
     const checkFollowStatus = async () => {
       if (artistId) {
         try {
-          const response = await fetch(`/api/artists/${artistId}/follow`, {
-            method: 'GET',
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            setIsFollowing(data.isFollowing);
-          }
+          setLoading(true);
+          const following = await isFollowingArtist(artistId);
+          setIsFollowing(following);
         } catch (error) {
           console.error('Error checking artist follow status:', error);
+        } finally {
+          setLoading(false);
         }
       }
     };
@@ -43,17 +41,13 @@ const FollowArtistPrompt: React.FC<FollowArtistPromptProps> = ({ artistId, artis
     setMessage(null);
     
     try {
-      const response = await fetch(`/api/artists/${artistId}/follow`, {
-        method: 'POST',
-      });
+      const result = await followArtist(artistId);
       
-      const data = await response.json();
-      
-      if (response.ok) {
+      if (result.success) {
         setIsFollowing(true);
-        setMessage({ type: 'success', text: data.message || 'Artist followed successfully!' });
+        setMessage({ type: 'success', text: result.message });
       } else {
-        setMessage({ type: 'error', text: data.error || 'Failed to follow artist' });
+        setMessage({ type: 'error', text: result.message });
       }
     } catch (error) {
       setMessage({ 
@@ -72,17 +66,13 @@ const FollowArtistPrompt: React.FC<FollowArtistPromptProps> = ({ artistId, artis
     setMessage(null);
     
     try {
-      const response = await fetch(`/api/artists/${artistId}/follow`, {
-        method: 'DELETE',
-      });
+      const result = await unfollowArtist(artistId);
       
-      const data = await response.json();
-      
-      if (response.ok) {
+      if (result.success) {
         setIsFollowing(false);
-        setMessage({ type: 'success', text: data.message || 'Artist unfollowed successfully!' });
+        setMessage({ type: 'success', text: result.message });
       } else {
-        setMessage({ type: 'error', text: data.error || 'Failed to unfollow artist' });
+        setMessage({ type: 'error', text: result.message });
       }
     } catch (error) {
       setMessage({ 

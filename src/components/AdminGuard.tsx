@@ -1,8 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import { Alert, Spinner } from 'react-bootstrap';
+
+// Create a client wrapper for the server action
+async function checkIsAdmin() {
+  // We need to make a fetch call to use the server action from a client component
+  const response = await fetch('/api/auth/check-admin');
+  if (!response.ok) {
+    throw new Error('Failed to check admin status');
+  }
+  const data = await response.json();
+  return data.isAdmin;
+}
 
 interface AdminGuardProps {
   children: React.ReactNode;
@@ -11,6 +21,7 @@ interface AdminGuardProps {
 
 /**
  * A component that only renders its children if the user is an admin
+ * Uses the centralized admin check server action
  */
 export default function AdminGuard({ children, fallback }: AdminGuardProps) {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
@@ -20,32 +31,8 @@ export default function AdminGuard({ children, fallback }: AdminGuardProps) {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const supabase = createClient();
-        
-        // Get the current user
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
-        if (userError) {
-          throw new Error(`Authentication error: ${userError.message}`);
-        }
-        
-        if (!user) {
-          setIsAdmin(false);
-          return;
-        }
-
-        // Check if user has admin role
-        const { data: role, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .single();
-
-        if (roleError && roleError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-          console.warn('Error checking admin role:', roleError);
-        }
-
-        setIsAdmin(role?.role === 'admin' || false);
+        const isAdminResult = await checkIsAdmin();
+        setIsAdmin(isAdminResult);
       } catch (error) {
         console.error('Error checking admin status:', error);
         setError(error instanceof Error ? error.message : 'Failed to check admin status');

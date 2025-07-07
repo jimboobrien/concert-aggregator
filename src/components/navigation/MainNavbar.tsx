@@ -57,8 +57,8 @@ const MainNavbar = () => {
     );
 
     // Initial check
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      checkUserStatus(user);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      checkUserStatus(session);
     });
 
     return () => {
@@ -67,9 +67,31 @@ const MainNavbar = () => {
   }, [supabase, checkUserStatus]);
 
   const handleLogout = async () => {
-    setLoading(true);
-    await supabase.auth.signOut();
-    router.push('/login');
+    try {
+      setLoading(true);
+      
+      // Use server-side logout API endpoint
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.redirected) {
+        // Follow the redirect from the server
+        window.location.href = response.url;
+      } else {
+        // Fallback to client-side navigation
+        router.push('/login');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+      
+      // If server-side logout fails, try client-side logout as fallback
+      await supabase.auth.signOut();
+      router.push('/login');
+    }
   };
 
   const isAuthenticated = !!user;

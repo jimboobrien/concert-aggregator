@@ -2,6 +2,8 @@
  * Helper functions that can be used across the application
  */
 
+import { redirect } from "next/navigation";
+
 export const getURL = () => {
   let url = 
     process.env.NEXT_PUBLIC_SITE_URL || 
@@ -71,6 +73,5 @@ export function encodedRedirect(
   path: string,
   message: string,
 ) {
-  const { redirect } = require("next/navigation");
   return redirect(`${path}?${type}=${encodeURIComponent(message)}`);
 } 

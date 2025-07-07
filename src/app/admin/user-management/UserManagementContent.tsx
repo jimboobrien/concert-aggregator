@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Table, Button, Form, InputGroup, Modal, Alert, Spinner, Badge } from 'react-bootstrap';
-import { createClient } from '@/utils/supabase/client';
 import { promoteUserToAdmin, removeAdminRole } from './actions';
 
 interface User {
@@ -37,8 +36,6 @@ export default function UserManagementContent() {
     setError(null);
     
     try {
-      const supabase = createClient();
-      
       // Get users from auth.users via admin client through API
       const response = await fetch('/api/admin/users', {
         method: 'POST',

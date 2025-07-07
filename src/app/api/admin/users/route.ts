@@ -37,12 +37,12 @@ export async function POST(request: Request) {
     // Get follow counts for each user
     const userIds = authUsers.users.map(user => user.id);
     
-    const { data: artistFollows, error: artistFollowsError } = await supabase
+    const { data: artistFollows } = await supabase
       .from('followed_artists')
       .select('user_id')
       .in('user_id', userIds);
     
-    const { data: venueFollows, error: venueFollowsError } = await supabase
+    const { data: venueFollows } = await supabase
       .from('followed_venues')
       .select('user_id')
       .in('user_id', userIds);

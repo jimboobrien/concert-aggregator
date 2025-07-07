@@ -6,7 +6,7 @@ test.describe('Admin Access', () => {
     await page.goto('/login');
     await page.fill('input[name="email"]', 'admin@example.com');
     await page.fill('input[name="password"]', 'Admin1234!');
-    await page.click('button[type="submit"]');
+    await page.click('button:has-text("Sign In")');
     
     // Wait for login redirect - could go to dashboard or account
     await page.waitForURL(/\/(dashboard|account)/);
@@ -67,7 +67,7 @@ test.describe('Regular User Admin Access', () => {
     await page.goto('/login');
     await page.fill('input[name="email"]', 'test@example.com');
     await page.fill('input[name="password"]', 'Test1234!');
-    await page.click('button[type="submit"]');
+    await page.click('button:has-text("Sign In")');
     
     // Wait for login redirect - could go to dashboard or account
     await page.waitForURL(/\/(dashboard|account)/);

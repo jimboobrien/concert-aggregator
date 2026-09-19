@@ -3,8 +3,14 @@ import { DataPersistenceService } from '@/services/data-persistence';
 import { createAdminClient } from '@/utils/supabase/admin-client';
 import { findOrCreateVenue, recordVenueScrape } from '@/utils/venue-utils';
 import { createClient } from '@/utils/supabase/client';
+import { rejectUnlessAuthenticated } from '@/utils/auth-helpers';
 
 export async function POST(request: NextRequest) {
+  const denied = await rejectUnlessAuthenticated();
+  if (denied) {
+    return denied;
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;

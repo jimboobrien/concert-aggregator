@@ -1,5 +1,7 @@
+import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin-client';
 import { createClient } from '@/utils/supabase/server';
+import { hasSessionUser, type SessionUser } from '@/utils/session-user';
 
 /**
  * Check if the current user has admin role
@@ -31,6 +33,36 @@ export async function isAdmin(): Promise<boolean> {
   } catch (error) {
     console.error('Error checking admin status:', error);
     return false;
+  }
+}
+
+async function currentSessionUser(): Promise<SessionUser | null> {
+  if (typeof window !== 'undefined') {
+    return null;
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user && hasSessionUser(user) ? user : null;
+}
+
+/**
+ * Return a 401 unless the request has a verified user session.
+ * Middleware skips auth redirects for every `/api/*` path, so catalog-write
+ * routes that use the service-role client must check this themselves.
+ */
+export async function rejectUnlessAuthenticated(): Promise<NextResponse | null> {
+  try {
+    const user = await currentSessionUser();
+
+    if (!hasSessionUser(user)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error verifying request authentication:', error);
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 }
 

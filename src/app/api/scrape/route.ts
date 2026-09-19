@@ -5,6 +5,7 @@ import { CrawlConfig as ApiCrawlConfig, StorageOptions } from '@/types/scraping'
 import { CrawlConfig as ServiceCrawlConfig, SelectorSchema as ServiceSelectorSchema } from '@/types';
 import { formatScrapedData } from '@/utils/format-scraped-data';
 import { findOrCreateVenue } from '@/utils/venue-utils';
+import { rejectUnlessAuthenticated } from '@/utils/auth-helpers';
 
 // Adapter function to convert API CrawlConfig to service CrawlConfig
 function adaptCrawlConfig(apiConfig: ApiCrawlConfig): ServiceCrawlConfig {
@@ -40,6 +41,11 @@ function adaptCrawlConfig(apiConfig: ApiCrawlConfig): ServiceCrawlConfig {
 }
 
 export async function POST(request: NextRequest) {
+  const denied = await rejectUnlessAuthenticated();
+  if (denied) {
+    return denied;
+  }
+
   try {
     const body = await request.json();
     const {

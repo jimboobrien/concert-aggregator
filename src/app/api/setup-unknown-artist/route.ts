@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin-client';
+import { rejectUnlessAuthenticated } from '@/utils/auth-helpers';
 
 const UNKNOWN_ARTIST_ID = 'c0a80121-7ac6-4745-b000-f95544c77ed2';
 
 export async function GET() {
+  const denied = await rejectUnlessAuthenticated();
+  if (denied) {
+    return denied;
+  }
+
   try {
     const supabase = createAdminClient();
 

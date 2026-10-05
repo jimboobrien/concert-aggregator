@@ -7,6 +7,7 @@ import { CrawlConfig } from '@/types/scraping';
 import { createAdminClient } from '@/utils/supabase/admin-client';
 import { findOrCreateVenue, recordVenueScrape } from '@/utils/venue-utils';
 import { getCachedScrapeData, cacheScrapeData } from '@/utils/scrape-cache';
+import { isAdmin } from '@/utils/auth-helpers';
 
 export async function getScrapeData(
   url: string,
@@ -18,6 +19,12 @@ export async function getScrapeData(
   venueId?: string,
   venueName?: string
 ): Promise<ScrapedData | { error: string }> {
+  if (!(await isAdmin())) {
+    return {
+      error: 'Unauthorized: Only admins can scrape venues and import catalog data.',
+    };
+  }
+
   try {
     // Check for cached data if caching is enabled
     if (storageOptions.useCache !== false) {
@@ -305,6 +312,10 @@ export async function getVenues(): Promise<Array<{ id: string; name: string }>> 
 }
 
 export async function addVenue(name: string) {
+  if (!(await isAdmin())) {
+    return { error: 'Unauthorized: Only admins can add venues.' };
+  }
+
   try {
     const supabase = createAdminClient();
 

@@ -1,6 +1,7 @@
 import { createAdminClient } from './supabase/admin-client';
 import { FirecrawlService } from '@/services/firecrawl';
 import { checkVenueSimilarity } from './openrouter-client';
+import { shouldFillMissingVenueUrl } from './venue-url';
 
 /**
  * Extracts the domain from a URL
@@ -70,16 +71,19 @@ export async function findOrCreateVenue(url: string, venueName?: string): Promis
   // Then try to find by domain
   const { data: venueByDomain } = await supabase
     .from('venues')
-    .select('id, name, city, state')
+    .select('id, name, city, state, url')
     .eq('website_domain', domain)
     .single();
   
   if (venueByDomain) {
-    // Update the venue with the exact URL if it was found by domain
-    await supabase
-      .from('venues')
-      .update({ url })
-      .eq('id', venueByDomain.id);
+    // Fill a missing URL only. Replacing a set scrape target lets any
+    // caller of this helper point the venue at a different path.
+    if (shouldFillMissingVenueUrl(venueByDomain.url)) {
+      await supabase
+        .from('venues')
+        .update({ url })
+        .eq('id', venueByDomain.id);
+    }
     
     return { ...venueByDomain, isNew: false };
   }
@@ -115,8 +119,7 @@ export async function findOrCreateVenue(url: string, venueName?: string): Promis
         .single();
       
       if (existingVenue) {
-        // Update the venue with the new URL if not already set
-        if (existingVenue.url === null) {
+        if (shouldFillMissingVenueUrl(existingVenue.url)) {
           await supabase
             .from('venues')
             .update({ url })
